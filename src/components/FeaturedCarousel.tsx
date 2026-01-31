@@ -41,7 +41,7 @@ export default function FeaturedCarousel({ dishes, onSelect, lang }: FeaturedCar
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                             <div className="absolute bottom-4 left-4 right-4">
                                 <h3 className="text-white font-bold text-lg leading-tight line-clamp-1">{dish.title}</h3>
-                                <p className="text-accent-gold font-bold">{dish.price}€</p>
+                                <p className="text-accent-gold font-bold">{dish.price} F</p>
                             </div>
                         </div>
                     </motion.div>
