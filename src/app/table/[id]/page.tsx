@@ -71,9 +71,9 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
     const subscription = client.listen(`*[_type == "notification" && tableNumber == $table]`, { table: tableNumber }, { includeResult: true })
         .subscribe((update: any) => {
             const { transition, result } = update;
-            if (transition === 'appear') setHasActiveCall(true);
-            if (transition === 'update') setHasActiveCall(result.status !== 'done');
-            if (transition === 'disappear') setHasActiveCall(false);
+            if (transition === 'appear') setActiveCallStatus('pending');
+            if (transition === 'update') setActiveCallStatus(result.status !== 'done' ? result.status : null);
+            if (transition === 'disappear') setActiveCallStatus(null);
         });
 
     return () => {
@@ -185,13 +185,13 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
     if (isCallingWaiter) return;
     
     // --- GESTION DU DOUBLON (ZEN MODE) ---
-    if (hasActiveCall) {
+    if (activeCallStatus) {
         setIsWaiterModalOpen(true);
         return;
     }
 
     // --- OPTIMISTIC UI ---
-    setHasActiveCall(true); // Allume la cloche immédiatement
+    setActiveCallStatus('pending'); // Allume la cloche immédiatement
     setIsWaiterModalOpen(true);
     setIsSelectionSummaryOpen(false);
 
@@ -208,7 +208,7 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
     } catch (err: any) {
       console.error("Échec de l'appel:", err);
       // En cas d'échec critique seulement, on éteint la cloche
-      // setHasActiveCall(false); 
+      // setActiveCallStatus(null); 
     } finally {
       // On libère le clic quoi qu'il arrive après 2 secondes pour éviter le blocage
       setTimeout(() => setIsCallingWaiter(false), 2000);
