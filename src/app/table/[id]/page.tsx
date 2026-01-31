@@ -47,15 +47,15 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
     fetchActiveCall();
 
     const subscription = client.listen(`*[_type == "notification" && tableNumber == $table]`, { table: tableNumber }, { includeResult: true })
-        .subscribe((update) => {
-            const result = update.result as any;
-            if (update.transition === 'appear') {
+        .subscribe((update: any) => {
+            const { transition, result } = update;
+            if (transition === 'appear') {
                 setHasActiveCall(true);
             }
-            if (update.transition === 'update') {
+            if (transition === 'update') {
                 setHasActiveCall(result.status !== 'done');
             }
-            if (update.transition === 'disappear') {
+            if (transition === 'disappear') {
                 setHasActiveCall(false);
             }
         });

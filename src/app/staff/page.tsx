@@ -42,9 +42,8 @@ export default function StaffDashboard() {
     };
     fetchCalls();
 
-    const subscription = staffClient.listen(`*[_type == "notification"]`, {}, { includeResult: true }).subscribe((update) => {
-      const transition = update.transition;
-      const result = update.result as any;
+    const subscription = staffClient.listen(`*[_type == "notification"]`, {}, { includeResult: true }).subscribe((update: any) => {
+      const { transition, result, documentId } = update;
 
       if (transition === 'appear') {
         const newCall = result as unknown as ServerCall;
@@ -54,14 +53,14 @@ export default function StaffDashboard() {
       else if (transition === 'update') {
         if (result.status === 'done') {
           // Si le statut passe à "done", on le retire de la liste
-          setCalls(prev => prev.filter(c => c._id !== update.documentId));
+          setCalls(prev => prev.filter(c => c._id !== documentId));
         } else {
           // Sinon on met à jour l'appel dans la liste
-          setCalls(prev => prev.map(c => c._id === update.documentId ? result : c));
+          setCalls(prev => prev.map(c => c._id === documentId ? result : c));
         }
       }
       else if (transition === 'disappear') {
-        setCalls(prev => prev.filter(c => c._id !== update.documentId));
+        setCalls(prev => prev.filter(c => c._id !== documentId));
       }
     });
 
