@@ -59,6 +59,9 @@ export default function StaffDashboard() {
     };
     fetchCalls();
 
+    // Sécurité : Rafraîchir toutes le minutes au cas où Pusher rate un événement
+    const interval = setInterval(fetchCalls, 60000);
+
     // 2. CONFIGURER PUSHER
     if (!process.env.NEXT_PUBLIC_PUSHER_KEY) {
         console.error("Clé Pusher manquante !");
@@ -112,6 +115,7 @@ export default function StaffDashboard() {
     });
 
     return () => {
+      clearInterval(interval);
       channel.unbind_all();
       channel.unsubscribe();
       subscription.unsubscribe();

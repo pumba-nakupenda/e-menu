@@ -29,7 +29,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Numéro de table manquant" }, { status: 400 })
     }
 
-    // 1. Créer dans Sanity (Historique) - Sans 'sync' c'est déjà ultra rapide
+    // 1. Créer dans Sanity (Historique)
     const result = await writeClient.create({
       _type: 'notification',
       tableNumber: tableNumber,
@@ -37,14 +37,21 @@ export async function POST(request: Request) {
       type: type || 'waiter',
     })
 
-    // 2. Déclencher Pusher (avec le vrai ID)
-    await pusher.trigger('staff-notifications', 'new-call', {
-      _id: result._id,
-      tableNumber,
-      type: type || 'waiter',
-      status: 'pending',
-      _createdAt: result._createdAt || new Date().toISOString()
-    })
+    console.log("SANITY OK:", result._id);
+
+    // 2. Déclencher Pusher (Tentative)
+    try {
+      await pusher.trigger('staff-notifications', 'new-call', {
+        _id: result._id,
+        tableNumber,
+        type: type || 'waiter',
+        status: 'pending',
+        _createdAt: result._createdAt || new Date().toISOString()
+      })
+      console.log("PUSHER OK");
+    } catch (pusherError) {
+      console.error("ERREUR PUSHER (mais Sanity OK):", pusherError);
+    }
 
     return NextResponse.json({ success: true, result })
   } catch (error: any) {
