@@ -44,7 +44,7 @@ export default function StaffDashboard() {
 
     const subscription = staffClient.listen(`*[_type == "notification"]`).subscribe((update) => {
       if (update.transition === 'appear') {
-        const newCall = update.result as ServerCall;
+        const newCall = update.result as unknown as ServerCall;
         setCalls(prev => [newCall, ...prev]);
         playNotificationSound(calls.filter(c => c.tableNumber === newCall.tableNumber).length + 1);
       } else if (update.transition === 'disappear' || (update.result as any).status === 'done') {
