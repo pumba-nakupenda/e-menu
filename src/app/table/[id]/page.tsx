@@ -58,16 +58,19 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
     
     // Si MA table appelle
     channel.bind('new-call', (data: any) => {
-      if (data.tableNumber === tableNumber) setActiveCallStatus('pending');
+      console.log("Pusher new-call reçu:", data);
+      if (data.tableNumber === tableNumber) {
+          setActiveCallStatus('pending');
+      }
     });
 
     // Si un serveur met à jour ou valide l'appel
     channel.bind('resolved-call', (data: any) => {
-      // Si c'est pour un autre ID, on ignore sauf si c'est MA table (via fetch refresh)
+      console.log("Pusher resolved-call reçu:", data);
       fetchActiveCall();
     });
 
-    // 3. FALLBACK (SANITY LISTENER)
+    // 3. FALLBACK (SANITY LISTENER) - Updated with activeCallStatus
     const subscription = client.listen(`*[_type == "notification" && tableNumber == $table]`, { table: tableNumber }, { includeResult: true })
         .subscribe((update: any) => {
             const { transition, result } = update;

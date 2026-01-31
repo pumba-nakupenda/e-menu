@@ -83,8 +83,8 @@ export default function StaffDashboard() {
     
     // Nouvel appel
     channel.bind('new-call', (data: ServerCall) => {
+      console.log("STAFF: Nouveau call reçu via Pusher", data);
       setCalls(prev => {
-          // Éviter les doublons si Sanity Listener est aussi actif
           if (prev.find(c => c._id === data._id)) return prev;
           return [data, ...prev];
       });
@@ -93,6 +93,7 @@ export default function StaffDashboard() {
 
     // Appel mis à jour (resolu ou en cours)
     channel.bind('resolved-call', (data: { id: string, status: string }) => {
+      console.log("STAFF: Call résolu/majus via Pusher", data);
       if (data.status === 'done') {
         setCalls(prev => prev.filter(c => c._id !== data.id));
       } else {

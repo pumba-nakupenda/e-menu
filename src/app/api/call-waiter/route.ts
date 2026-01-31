@@ -29,27 +29,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Numéro de table manquant" }, { status: 400 })
     }
 
-    // Générer un ID à l'avance pour ne pas attendre Sanity
-    const tempId = `temp-${Date.now()}`
+    // 1. Créer dans Sanity (Historique) - Sans 'sync' c'est déjà ultra rapide
+    const result = await writeClient.create({
+      _type: 'notification',
+      tableNumber: tableNumber,
+      status: 'pending',
+      type: type || 'waiter',
+    })
 
-    // Lancer les deux en parallèle
-    const [sanityResult] = await Promise.all([
-      writeClient.create({
-        _type: 'notification',
-        tableNumber: tableNumber,
-        status: 'pending',
-        type: type || 'waiter',
-      }),
-      pusher.trigger('staff-notifications', 'new-call', {
-        _id: tempId, // On envoie l'ID temporaire pour la réactivité
-        tableNumber,
-        type: type || 'waiter',
-        status: 'pending',
-        _createdAt: new Date().toISOString()
-      })
-    ])
+    // 2. Déclencher Pusher (avec le vrai ID)
+    await pusher.trigger('staff-notifications', 'new-call', {
+      _id: result._id,
+      tableNumber,
+      type: type || 'waiter',
+      status: 'pending',
+      _createdAt: result._createdAt || new Date().toISOString()
+    })
 
-    return NextResponse.json({ success: true, result: sanityResult })
+    return NextResponse.json({ success: true, result })
   } catch (error: any) {
     console.error("DÉTAIL ERREUR API SANITY/PUSHER:", error)
     return NextResponse.json({ 
