@@ -15,15 +15,15 @@ export default function FeaturedCarousel({ dishes, onSelect, lang }: FeaturedCar
     if (dishes.length === 0) return null;
 
     return (
-        <div className="mb-10">
-            <div className="px-4 mb-4 flex items-center gap-2">
+        <div className="mb-0">
+            <div className="px-4 mb-3 flex items-center gap-2">
                 <Star size={16} className="text-accent-gold fill-accent-gold" />
                 <h2 className="font-display font-bold text-xl text-white italic">
                     {lang === "EN" ? "Chef's Suggestions" : "Les Suggestions du Chef"}
                 </h2>
             </div>
             
-            <div className="flex overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory gap-4 px-4">
+            <div className="flex overflow-x-auto pb-2 no-scrollbar snap-x snap-mandatory gap-4 px-4">
                 {dishes.map((dish) => (
                     <motion.div
                         key={dish.id}
