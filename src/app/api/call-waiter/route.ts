@@ -20,6 +20,8 @@ const writeClient = createClient({
   token: process.env.SANITY_API_WRITE_TOKEN,
 })
 
+import { unstable_after as after } from 'next/server'
+
 export async function POST(request: Request) {
   try {
     const body = await request.json()
@@ -29,13 +31,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Numéro de table manquant" }, { status: 400 })
     }
 
-    // GÉNÉRER UN ID UNIQUE IMMÉDIATEMENT
-    const notificationId = `call-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const notificationId = `call-${Date.now()}`;
     const timestamp = new Date().toISOString();
 
-    // LANCER LES DEUX EN PARALLÈLE (VRAI TEMPS RÉEL)
-    // On ne fait pas "await" sur Sanity avant de lancer Pusher
-    const pusherPromise = pusher.trigger('staff-notifications', 'new-call', {
+    // 1. DÉCLENCHER PUSHER IMMÉDIATEMENT (PRIORITÉ)
+    await pusher.trigger('staff-notifications', 'new-call', {
       _id: notificationId,
       tableNumber,
       type: type || 'waiter',
@@ -43,17 +43,25 @@ export async function POST(request: Request) {
       _createdAt: timestamp
     });
 
-    const sanityPromise = writeClient.create({
-      _id: notificationId, // On force le même ID dans Sanity
-      _type: 'notification',
-      tableNumber: tableNumber,
-      status: 'pending',
-      type: type || 'waiter',
+    // 2. ENREGISTRER DANS SANITY EN ARRIÈRE-PLAN
+    // On utilise after() pour que Vercel ne coupe pas le processus 
+    // mais réponde quand même au client tout de suite.
+    after(async () => {
+      try {
+        await writeClient.create({
+          _id: notificationId,
+          _type: 'notification',
+          tableNumber: tableNumber,
+          status: 'pending',
+          type: type || 'waiter',
+        });
+        console.log("SANITY BACKGROUND OK");
+      } catch (err) {
+        console.error("SANITY BACKGROUND ERROR:", err);
+      }
     });
 
-    // On attend que les deux soient lancés
-    await Promise.all([pusherPromise, sanityPromise]);
-
+    // RÉPONSE IMMÉDIATE AU CLIENT
     return NextResponse.json({ success: true, id: notificationId })
   } catch (error: any) {
     console.error("DÉTAIL ERREUR API SANITY/PUSHER:", error)

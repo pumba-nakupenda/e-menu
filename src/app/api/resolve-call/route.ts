@@ -19,24 +19,62 @@ const writeClient = createClient({
   token: process.env.SANITY_API_WRITE_TOKEN,
 })
 
+import { unstable_after as after } from 'next/server'
+
+
+
 export async function POST(request: Request) {
+
   try {
+
     const body = await request.json()
+
     const { id, status } = body
 
+
+
     if (!id) {
+
       return NextResponse.json({ error: "ID de notification manquant" }, { status: 400 })
+
     }
 
-    // 1. Prévenir tout le monde du changement de statut
+
+
+    // 1. Prévenir tout le monde IMMÉDIATEMENT
+
     await pusher.trigger('staff-notifications', 'resolved-call', { id, status: status || 'done' })
 
-    // 2. Mettre à jour Sanity
-    const result = await writeClient
-      .patch(id)
-      .set({ status: status || 'done' })
-      .commit()
-    return NextResponse.json({ success: true, result })
+
+
+    // 2. Mettre à jour Sanity en arrière-plan
+
+    after(async () => {
+
+        try {
+
+            await writeClient
+
+              .patch(id)
+
+              .set({ status: status || 'done' })
+
+              .commit()
+
+            console.log("SANITY RESOLVE BACKGROUND OK");
+
+        } catch (err) {
+
+            console.error("SANITY RESOLVE ERROR:", err);
+
+        }
+
+    });
+
+
+
+    return NextResponse.json({ success: true })
+
   } catch (error: any) {
     console.error("Erreur API Resolve Call:", error)
     return NextResponse.json({ error: error.message }, { status: 500 })
