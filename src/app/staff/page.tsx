@@ -191,59 +191,23 @@ export default function StaffDashboard() {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-        {/* SECTION GAUCHE : PLAN DE SALLE (4/12) */}
-        <div className="xl:col-span-5 space-y-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-2 h-6 bg-accent-gold rounded-full" />
-            <h2 className="text-xl font-display font-bold italic">Plan de Salle</h2>
-          </div>
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-              {totalTables.map(num => {
-                  const tableCalls = calls.filter(c => c.tableNumber === num);
-                  const isPending = tableCalls.some(c => c.status === 'pending');
-                  const isProcessing = tableCalls.some(c => c.status === 'processing');
-                  const hasBill = tableCalls.some(c => c.type === 'bill');
-
-                  return (
-                      <motion.div
-                        key={num}
-                        layout
-                        className={cn(
-                            "aspect-square rounded-[24px] border flex flex-col items-center justify-center gap-1 transition-all relative overflow-hidden",
-                            tableCalls.length > 0 
-                                ? (isProcessing ? "bg-blue-500/20 border-blue-500/40 shadow-[0_0_15px_rgba(59,130,246,0.1)]" : "bg-accent-gold/20 border-accent-gold/40 animate-pulse shadow-gold")
-                                : "bg-white/5 border-white/5 opacity-30"
-                        )}
-                      >
-                          <span className="text-xl font-display font-bold italic">{num}</span>
-                          <div className="flex gap-1">
-                              {isPending && <div className="w-1.5 h-1.5 bg-accent-gold rounded-full" />}
-                              {isProcessing && <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />}
-                              {hasBill && <CreditCard size={12} className="text-blue-400" />}
-                          </div>
-                      </motion.div>
-                  );
-              })}
-          </div>
-        </div>
-
-        {/* SECTION DROITE : FLUX D'APPELS (8/12) */}
-        <div className="xl:col-span-7 space-y-6">
+      <div className="flex flex-col gap-12">
+        {/* SECTION HAUT : FLUX D'APPELS */}
+        <div className="space-y-6">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-2 h-6 bg-blue-500 rounded-full" />
             <h2 className="text-xl font-display font-bold italic">Flux d'Appels Direct</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <AnimatePresence mode="popLayout">
               {groupedCalls.length > 0 ? (
                 groupedCalls.map(({ latest, count }) => (
                   <motion.div
                     key={latest.tableNumber}
                     layout
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     className={cn(
                         "bg-surface border p-5 rounded-[28px] shadow-2xl relative overflow-hidden group",
@@ -311,12 +275,48 @@ export default function StaffDashboard() {
                   </motion.div>
                 ))
               ) : (
-                <div className="col-span-full py-20 text-center opacity-10">
-                  <Clock size={48} className="mx-auto mb-4" />
-                  <p className="text-lg italic">Aucun appel en attente...</p>
+                <div className="col-span-full py-12 text-center border border-dashed border-white/5 rounded-[28px] opacity-20">
+                  <Clock size={32} className="mx-auto mb-2" />
+                  <p className="text-sm italic">Aucun appel en attente...</p>
                 </div>
               )}
             </AnimatePresence>
+          </div>
+        </div>
+
+        {/* SECTION BAS : PLAN DE SALLE */}
+        <div className="space-y-6 border-t border-white/10 pt-12">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-2 h-6 bg-accent-gold rounded-full" />
+            <h2 className="text-xl font-display font-bold italic">Plan de Salle</h2>
+          </div>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-12 gap-3">
+              {totalTables.map(num => {
+                  const tableCalls = calls.filter(c => c.tableNumber === num);
+                  const isPending = tableCalls.some(c => c.status === 'pending');
+                  const isProcessing = tableCalls.some(c => c.status === 'processing');
+                  const hasBill = tableCalls.some(c => c.type === 'bill');
+
+                  return (
+                      <motion.div
+                        key={num}
+                        layout
+                        className={cn(
+                            "aspect-square rounded-[24px] border flex flex-col items-center justify-center gap-1 transition-all relative overflow-hidden",
+                            tableCalls.length > 0 
+                                ? (isProcessing ? "bg-blue-500/20 border-blue-500/40 shadow-[0_0_15px_rgba(59,130,246,0.1)]" : "bg-accent-gold/20 border-accent-gold/40 animate-pulse shadow-gold")
+                                : "bg-white/5 border-white/5 opacity-30"
+                        )}
+                      >
+                          <span className="text-xl font-display font-bold italic">{num}</span>
+                          <div className="flex gap-1">
+                              {isPending && <div className="w-1.5 h-1.5 bg-accent-gold rounded-full" />}
+                              {isProcessing && <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />}
+                              {hasBill && <CreditCard size={12} className="text-blue-400" />}
+                          </div>
+                      </motion.div>
+                  );
+              })}
           </div>
         </div>
       </div>
