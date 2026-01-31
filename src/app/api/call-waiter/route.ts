@@ -34,20 +34,19 @@ export async function POST(request: Request) {
     const notificationId = `call-${Date.now()}`;
     const timestamp = new Date().toISOString();
 
-    // 1. DÉCLENCHER PUSHER IMMÉDIATEMENT (PRIORITÉ)
-    await pusher.trigger('staff-notifications', 'new-call', {
-      _id: notificationId,
-      tableNumber,
-      type: type || 'waiter',
-      status: 'pending',
-      _createdAt: timestamp
-    });
-
-    // 2. ENREGISTRER DANS SANITY EN ARRIÈRE-PLAN
-    // On utilise after() pour que Vercel ne coupe pas le processus 
-    // mais réponde quand même au client tout de suite.
+    // TOUT EN ARRIÈRE-PLAN POUR ZÉRO TIMEOUT ET RÉPONSE INSTANTANÉE
     after(async () => {
       try {
+        // 1. Pusher
+        await pusher.trigger('staff-notifications', 'new-call', {
+          _id: notificationId,
+          tableNumber,
+          type: type || 'waiter',
+          status: 'pending',
+          _createdAt: timestamp
+        });
+        
+        // 2. Sanity
         await writeClient.create({
           _id: notificationId,
           _type: 'notification',
@@ -55,9 +54,10 @@ export async function POST(request: Request) {
           status: 'pending',
           type: type || 'waiter',
         });
-        console.log("SANITY BACKGROUND OK");
+        
+        console.log("BACKGROUND TASKS OK");
       } catch (err) {
-        console.error("SANITY BACKGROUND ERROR:", err);
+        console.error("BACKGROUND TASKS ERROR:", err);
       }
     });
 
@@ -67,7 +67,8 @@ export async function POST(request: Request) {
     console.error("DÉTAIL ERREUR API SANITY/PUSHER:", error)
     return NextResponse.json({ 
       error: "Erreur serveur", 
-      message: error.message 
+      message: error.message,
+      stack: error.stack
     }, { status: 500 })
   }
 }
