@@ -39,13 +39,13 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
   const [sectionFilters, setSectionFilters] = useState<Record<string, string>>({});
   const [categoryTranslations, setCategoryTranslations] = useState<Record<string, string>>({});
   const [isCallingWaiter, setIsCallingWaiter] = useState(false);
-  const [hasActiveCall, setHasActiveCall] = useState(false);
+  const [activeCallStatus, setActiveCallStatus] = useState<'pending' | 'processing' | null>(null);
 
   useEffect(() => {
     // 1. CHARGEMENT INITIAL (SANITY)
     const fetchActiveCall = async () => {
         const data = await client.fetch(`*[_type == "notification" && tableNumber == $table && status != "done"][0]`, { table: tableNumber });
-        setHasActiveCall(!!data);
+        setActiveCallStatus(data?.status || null);
     };
     fetchActiveCall();
 
@@ -56,14 +56,14 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
 
     const channel = pusher.subscribe('staff-notifications');
     
-    // Si MA table appelle (depuis n'importe quel appareil sur cette table)
+    // Si MA table appelle
     channel.bind('new-call', (data: any) => {
-      if (data.tableNumber === tableNumber) setHasActiveCall(true);
+      if (data.tableNumber === tableNumber) setActiveCallStatus('pending');
     });
 
-    // Si un serveur valide l'appel de MA table
+    // Si un serveur met à jour ou valide l'appel
     channel.bind('resolved-call', (data: any) => {
-      // On rafraîchit pour être sûr de l'ID ou on compare si on a l'ID
+      // Si c'est pour un autre ID, on ignore sauf si c'est MA table (via fetch refresh)
       fetchActiveCall();
     });
 
@@ -217,7 +217,7 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
 
   return (
     <main className="min-h-screen bg-background pb-32">
-      <Navbar onSearchClick={() => setIsSearchOpen(true)} lang={lang} onLangChange={setLang} tableNumber={tableNumber} hasActiveCall={hasActiveCall} />
+      <Navbar onSearchClick={() => setIsSearchOpen(true)} lang={lang} onLangChange={setLang} tableNumber={tableNumber} hasActiveCall={!!activeCallStatus} />
 
       <div className="mt-24">
         <FeaturedCarousel 
@@ -276,7 +276,7 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
 
       <DishBottomSheet dish={selectedDish} isOpen={isBottomSheetOpen} isSelected={!!selectedDish && selectedDishIds.has(selectedDish.id)} onClose={() => setIsBottomSheetOpen(false)} onToggleSelection={handleToggleSelection} lang={lang} />
       <SearchOverlay isOpen={isSearchOpen} selectedIds={selectedDishIds} dishes={dishes} categories={categories} onClose={() => setIsSearchOpen(false)} onSelectDish={(d) => { setIsSearchOpen(false); setSelectedDish(d); setIsBottomSheetOpen(true); }} onToggleDish={handleToggleSelection} lang={lang} categoryTranslations={categoryTranslations} allBadgeFilters={allBadgeFilters} badgeIcons={allFilterIcons} />
-      <WaiterCallModal isOpen={isWaiterModalOpen} onClose={() => setIsWaiterModalOpen(false)} lang={lang} tableNumber={tableNumber} isReminder={hasActiveCall} />
+      <WaiterCallModal isOpen={isWaiterModalOpen} onClose={() => setIsWaiterModalOpen(false)} lang={lang} tableNumber={tableNumber} status={activeCallStatus || 'pending'} />
       <SelectionSummary isOpen={isSelectionSummaryOpen} selectedIds={selectedDishIds} dishes={dishes} onClose={() => setIsSelectionSummaryOpen(false)} onRemove={(id) => setSelectedDishIds(prev => { const n = new Set(prev); n.delete(id); return n; })} onCallWaiter={() => { handleCallWaiter('waiter'); setIsSelectionSummaryOpen(false); setIsWaiterModalOpen(true); }} lang={lang} />
       <SelectionBar itemCount={selectedDishIds.size} onCallWaiter={() => { handleCallWaiter('waiter'); setIsWaiterModalOpen(true); }} onViewSelection={() => setIsSelectionSummaryOpen(true)} lang={lang} />
 

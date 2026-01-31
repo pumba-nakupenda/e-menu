@@ -1,17 +1,19 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { UserCheck, X, CheckCircle2 } from "lucide-react";
+import { UserCheck, X, CheckCircle2, Clock } from "lucide-react";
 
 interface WaiterCallModalProps {
     isOpen: boolean;
     onClose: () => void;
     lang?: "FR" | "EN";
     tableNumber?: string;
-    isReminder?: boolean; // Ajouté
+    status: 'pending' | 'processing';
 }
 
-export default function WaiterCallModal({ isOpen, onClose, lang = "FR", tableNumber, isReminder }: WaiterCallModalProps) {
+export default function WaiterCallModal({ isOpen, onClose, lang = "FR", tableNumber, status }: WaiterCallModalProps) {
+    const isProcessing = status === 'processing';
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -30,28 +32,31 @@ export default function WaiterCallModal({ isOpen, onClose, lang = "FR", tableNum
                         exit={{ scale: 0.9, opacity: 0 }}
                         className="relative bg-surface border border-white/10 p-10 rounded-[40px] w-full max-w-sm text-center shadow-2xl"
                     >
-                        <div className="w-20 h-20 bg-accent-gold/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-accent-gold/20">
-                            {isReminder ? (
-                                <CheckCircle2 size={32} className="text-accent-gold" />
+                        <div className={cn(
+                            "w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 border",
+                            isProcessing ? "bg-blue-500/10 border-blue-500/20" : "bg-accent-gold/10 border-accent-gold/20"
+                        )}>
+                            {isProcessing ? (
+                                <Clock size={32} className="text-blue-400 animate-pulse" />
                             ) : (
                                 <UserCheck size={32} className="text-accent-gold" />
                             )}
                         </div>
 
                         <h2 className="font-display font-bold text-[28px] text-white leading-tight mb-4">
-                            {isReminder 
-                                ? (lang === "EN" ? "Request Received" : "Demande reçue")
-                                : (lang === "EN" ? "Waiter is coming" : "Le serveur arrive")
+                            {isProcessing 
+                                ? (lang === "EN" ? "Waiter is coming" : "Un serveur est en route")
+                                : (lang === "EN" ? "Request Noted" : "Demande notée")
                             }
                         </h2>
                         <p className="text-text-secondary text-[15px] leading-relaxed mb-10 opacity-80">
-                            {isReminder
+                            {isProcessing
                                 ? (lang === "EN"
-                                    ? `Table ${tableNumber || "..."}: Your call has already been noted. Our team is arriving as quickly as possible.`
-                                    : `Table ${tableNumber || "..."} : Votre appel a bien été noté. Notre équipe arrive vers vous le plus rapidement possible.`)
+                                    ? `Table ${tableNumber || "..."}: A waiter has taken your request and is heading to your table.`
+                                    : `Table ${tableNumber || "..."} : Un serveur a pris en charge votre demande et se dirige vers vous.`)
                                 : (lang === "EN"
-                                    ? `Table ${tableNumber || "..."}: A member of our team has been notified and will be with you shortly.`
-                                    : `Table ${tableNumber || "..."} : Un membre de notre équipe a été notifié et se dirigera vers vous dans quelques instants.`)
+                                    ? `Table ${tableNumber || "..."}: Your request has been sent to our team.`
+                                    : `Table ${tableNumber || "..."} : Votre demande a bien été transmise à notre équipe.`)
                             }
                         </p>
 
