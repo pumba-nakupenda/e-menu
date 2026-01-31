@@ -359,7 +359,7 @@ async function main() {
   }
 
   for (const badge of BADGES) {
-    await client.createOrReplace({ _type: 'badge', ...badge })
+    await client.createOrReplace({ _type: 'badge', ...badge } as any)
   }
 
   for (const dish of DISHES) {
