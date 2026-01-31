@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     const result = await writeClient
       .patch(id)
       .set({ status: status || 'done' })
-      .commit()
+      .commit({ visibility: 'sync' }) // Force la synchronisation immédiate
 
     return NextResponse.json({ success: true, result })
   } catch (error: any) {

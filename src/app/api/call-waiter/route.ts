@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       tableNumber: tableNumber,
       status: 'pending',
       type: type || 'waiter',
-    })
+    }, { visibility: 'sync' }) // Force la synchronisation immédiate pour les listeners
 
     return NextResponse.json({ success: true, result })
   } catch (error: any) {
