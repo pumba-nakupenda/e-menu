@@ -29,36 +29,32 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Numéro de table manquant" }, { status: 400 })
     }
 
-    // 1. Créer dans Sanity (Historique)
-    const result = await writeClient.create({
+    // GÉNÉRER UN ID UNIQUE IMMÉDIATEMENT
+    const notificationId = `call-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const timestamp = new Date().toISOString();
+
+    // LANCER LES DEUX EN PARALLÈLE (VRAI TEMPS RÉEL)
+    // On ne fait pas "await" sur Sanity avant de lancer Pusher
+    const pusherPromise = pusher.trigger('staff-notifications', 'new-call', {
+      _id: notificationId,
+      tableNumber,
+      type: type || 'waiter',
+      status: 'pending',
+      _createdAt: timestamp
+    });
+
+    const sanityPromise = writeClient.create({
+      _id: notificationId, // On force le même ID dans Sanity
       _type: 'notification',
       tableNumber: tableNumber,
       status: 'pending',
       type: type || 'waiter',
-    })
+    });
 
-    console.log("SANITY OK:", result._id);
+    // On attend que les deux soient lancés
+    await Promise.all([pusherPromise, sanityPromise]);
 
-    // 2. Déclencher Pusher (Tentative)
-    let pusherStatus = "sent";
-    try {
-      await pusher.trigger('staff-notifications', 'new-call', {
-        _id: result._id,
-        tableNumber,
-        type: type || 'waiter',
-        status: 'pending',
-        _createdAt: result._createdAt || new Date().toISOString()
-      })
-    } catch (pusherError: any) {
-      console.error("ERREUR PUSHER:", pusherError);
-      pusherStatus = `error: ${pusherError.message || 'unknown'}`;
-    }
-
-    return NextResponse.json({ 
-      success: true, 
-      result, 
-      pusherStatus // On renvoie l'état pour débugger
-    })
+    return NextResponse.json({ success: true, id: notificationId })
   } catch (error: any) {
     console.error("DÉTAIL ERREUR API SANITY/PUSHER:", error)
     return NextResponse.json({ 
