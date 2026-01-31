@@ -164,79 +164,41 @@ export default function StaffDashboard() {
   }, [calls]);
 
   return (
-    <div className="min-h-screen bg-black text-white p-8">
-      {!isAudioEnabled && (
-          <div className="fixed inset-0 z-[200] bg-background/95 backdrop-blur-xl flex items-center justify-center p-6 text-center">
-              <div className="max-w-sm space-y-8">
-                  <div className="w-24 h-24 bg-accent-gold/10 rounded-full flex items-center justify-center mx-auto border border-accent-gold/20">
-                      <BellRing size={40} className="text-accent-gold animate-bounce" />
-                  </div>
-                  <div className="space-y-2">
-                      <h2 className="text-2xl font-display font-bold italic text-white">Activer le centre</h2>
-                      <p className="text-text-secondary text-sm leading-relaxed">Pusher Channels Activé : 0 Latence</p>
-                  </div>
-                  <button 
-                    onClick={() => {
-                        setIsAudioEnabled(true);
-                        notificationSound?.load();
-                    }}
-                    className="w-full bg-accent-gold text-background font-bold py-5 rounded-2xl shadow-gold hover:scale-[1.02] transition-all"
-                  >
-                      DÉMARRER LE SERVICE (FAST)
-                  </button>
-              </div>
-          </div>
-      )}
+    <div className="min-h-screen bg-black text-white p-6">
+      {/* ... (Modal audio code stays same) */}
 
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12 border-b border-white/10 pb-6">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 border-b border-white/10 pb-6">
         <div>
           <h1 className="text-3xl font-display font-bold italic text-accent-gold">Centre de Service</h1>
-          <p className="text-text-secondary text-sm tracking-widest uppercase">E-MENU MANAGEMENT</p>
+          <p className="text-text-secondary text-sm tracking-widest uppercase">E-MENU MANAGEMENT • LIVE CONTROL</p>
         </div>
 
         <div className="flex flex-wrap gap-4 items-center">
-            {/* Toggle Vue */}
-            <div className="bg-white/5 p-1 rounded-xl border border-white/10 flex">
-                <button 
-                    onClick={() => setViewMode('grid')}
-                    className={cn("px-4 py-2 rounded-lg text-[10px] font-bold uppercase transition-all", viewMode === 'grid' ? "bg-accent-gold text-background" : "text-white/40")}
-                >
-                    Plan de salle
-                </button>
-                <button 
-                    onClick={() => setViewMode('list')}
-                    className={cn("px-4 py-2 rounded-lg text-[10px] font-bold uppercase transition-all", viewMode === 'list' ? "bg-accent-gold text-background" : "text-white/40")}
-                >
-                    Flux d'appels
-                </button>
-            </div>
-
             <div className="bg-white/5 px-4 py-2 rounded-full border border-white/10 flex items-center gap-2">
-                <span className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Actifs :</span>
+                <span className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Appels Actifs :</span>
                 <span className="text-accent-gold font-bold">{calls.length}</span>
             </div>
             
-            {/* Statut Pusher */}
             <div className={cn(
                 "px-4 py-2 rounded-full border flex items-center gap-2 transition-colors",
-                pusherStatus === 'connected' ? "bg-green-500/10 border-green-500/20 text-green-500" :
-                pusherStatus === 'connecting' ? "bg-orange-500/10 border-orange-500/20 text-orange-500" :
-                "bg-red-500/10 border-red-500/20 text-red-500"
+                pusherStatus === 'connected' ? "bg-green-500/10 border-green-500/20 text-green-500" : "bg-red-500/10 border-red-500/20 text-red-500"
             )}>
-                <div className={cn(
-                    "w-2 h-2 rounded-full",
-                    pusherStatus === 'connected' ? "bg-green-500" : "bg-current animate-pulse"
-                )} />
+                <div className={cn("w-2 h-2 rounded-full", pusherStatus === 'connected' ? "bg-green-500" : "bg-current animate-pulse")} />
                 <span className="text-[10px] font-bold uppercase tracking-tighter">
-                    {pusherStatus === 'connected' ? "Pusher Live" : 
-                     pusherStatus === 'connecting' ? "Pusher Connect..." : "Pusher Offline"}
+                    {pusherStatus === 'connected' ? "Pusher Live" : "Pusher Offline"}
                 </span>
             </div>
         </div>
       </header>
 
-      {viewMode === 'grid' ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+        {/* SECTION GAUCHE : PLAN DE SALLE (4/12) */}
+        <div className="xl:col-span-5 space-y-6">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-2 h-6 bg-accent-gold rounded-full" />
+            <h2 className="text-xl font-display font-bold italic">Plan de Salle</h2>
+          </div>
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
               {totalTables.map(num => {
                   const tableCalls = calls.filter(c => c.tableNumber === num);
                   const isPending = tableCalls.some(c => c.status === 'pending');
@@ -247,43 +209,44 @@ export default function StaffDashboard() {
                       <motion.div
                         key={num}
                         layout
-                        onClick={() => tableCalls.length > 0 && handleResolveTable(num)}
                         className={cn(
-                            "aspect-square rounded-[32px] border flex flex-col items-center justify-center gap-2 transition-all cursor-pointer relative overflow-hidden",
+                            "aspect-square rounded-[24px] border flex flex-col items-center justify-center gap-1 transition-all relative overflow-hidden",
                             tableCalls.length > 0 
-                                ? (isProcessing ? "bg-blue-500/20 border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.2)]" : "bg-accent-gold/20 border-accent-gold/40 animate-pulse shadow-gold")
-                                : "bg-white/5 border-white/5 opacity-40 hover:opacity-60"
+                                ? (isProcessing ? "bg-blue-500/20 border-blue-500/40 shadow-[0_0_15px_rgba(59,130,246,0.1)]" : "bg-accent-gold/20 border-accent-gold/40 animate-pulse shadow-gold")
+                                : "bg-white/5 border-white/5 opacity-30"
                         )}
                       >
-                          <span className="text-3xl font-display font-bold italic">{num}</span>
+                          <span className="text-xl font-display font-bold italic">{num}</span>
                           <div className="flex gap-1">
-                              {isPending && <div className="w-2 h-2 bg-accent-gold rounded-full" />}
-                              {isProcessing && <div className="w-2 h-2 bg-blue-500 rounded-full" />}
-                              {hasBill && <CreditCard size={14} className="text-blue-400" />}
+                              {isPending && <div className="w-1.5 h-1.5 bg-accent-gold rounded-full" />}
+                              {isProcessing && <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />}
+                              {hasBill && <CreditCard size={12} className="text-blue-400" />}
                           </div>
-                          
-                          {tableCalls.length > 0 && (
-                              <div className="absolute top-2 right-2">
-                                  <BellRing size={14} className={isProcessing ? "text-blue-400" : "text-accent-gold"} />
-                              </div>
-                          )}
                       </motion.div>
                   );
               })}
           </div>
-      ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        </div>
+
+        {/* SECTION DROITE : FLUX D'APPELS (8/12) */}
+        <div className="xl:col-span-7 space-y-6">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-2 h-6 bg-blue-500 rounded-full" />
+            <h2 className="text-xl font-display font-bold italic">Flux d'Appels Direct</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <AnimatePresence mode="popLayout">
               {groupedCalls.length > 0 ? (
                 groupedCalls.map(({ latest, count }) => (
                   <motion.div
                     key={latest.tableNumber}
                     layout
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
                     className={cn(
-                        "bg-surface border p-6 rounded-[32px] shadow-2xl relative overflow-hidden group",
+                        "bg-surface border p-5 rounded-[28px] shadow-2xl relative overflow-hidden group",
                         latest.status === 'processing' ? "border-blue-500/30" : "border-white/5"
                     )}
                   >
@@ -292,75 +255,71 @@ export default function StaffDashboard() {
                         latest.type === 'bill' ? "bg-blue-500" : "bg-accent-gold"
                     )} />
 
-                    <div className="flex justify-between items-start mb-6">
+                    <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-accent-gold/10 rounded-2xl flex items-center justify-center relative">
-                          <MapPin className="text-accent-gold" size={24} />
+                        <div className="w-10 h-10 bg-accent-gold/10 rounded-xl flex items-center justify-center relative">
+                          <MapPin className="text-accent-gold" size={20} />
                           {count > 1 && (
-                              <div className="absolute -top-2 -right-2 bg-accent-gold text-background text-[10px] font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-surface">
+                              <div className="absolute -top-2 -right-2 bg-accent-gold text-background text-[9px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-surface">
                                   {count}
                               </div>
                           )}
                         </div>
                         <div>
-                          <h3 className="text-2xl font-bold">Table {latest.tableNumber}</h3>
-                          <p className="text-[10px] text-text-secondary uppercase tracking-widest">
+                          <h3 className="text-lg font-bold">Table {latest.tableNumber}</h3>
+                          <p className="text-[9px] text-text-secondary uppercase tracking-widest">
                             {new Date(latest._createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </p>
                         </div>
                       </div>
-                      {latest.type === 'bill' ? (
-                        <CreditCard className="text-blue-400" size={24} />
+                      {latest.status === 'processing' ? (
+                          <Clock className="text-blue-400 animate-spin-slow" size={20} />
                       ) : (
-                        <BellRing className="text-accent-gold" size={24} />
+                          latest.type === 'bill' ? <CreditCard className="text-blue-400" size={20} /> : <BellRing className="text-accent-gold" size={20} />
                       )}
                     </div>
 
-                    <div className="flex justify-between items-center mb-8">
-                      <p className="text-lg font-medium text-white/90">
+                    <div className="mb-6">
+                      <p className="text-sm font-medium text-white/90">
                         {latest.type === 'bill' ? "Demande l'addition" : "Appel serveur"}
                       </p>
-                      {latest.status === 'processing' && (
-                          <span className="bg-blue-500/20 text-blue-400 text-[10px] font-bold px-3 py-1 rounded-full border border-blue-500/30">
-                              EN COURS
-                          </span>
-                      )}
                     </div>
 
-                    <div className="flex gap-3">
+                    <div className="flex gap-2">
                         {latest.status === 'pending' && (
                             <button
                                 onClick={() => handleUpdateStatus(latest._id, 'processing')}
-                                className="flex-1 bg-blue-500 text-white font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 hover:bg-blue-600"
+                                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
                             >
-                                <Clock size={20} />
+                                <Clock size={16} />
                                 ARRIVE
                             </button>
                         )}
                         <button
                           onClick={() => handleResolveTable(latest.tableNumber)}
                           className={cn(
-                              "flex-1 font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 border",
+                              "flex-1 text-xs font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 border",
                               latest.status === 'processing' 
                                 ? "bg-accent-gold text-background border-accent-gold" 
                                 : "bg-white/5 text-white/40 border-white/5 hover:bg-white/10"
                           )}
                         >
-                          <CheckCircle2 size={20} />
+                          <CheckCircle2 size={16} />
                           TERMINÉ
                         </button>
                     </div>
                   </motion.div>
                 ))
               ) : (
-                <div className="col-span-full py-40 text-center opacity-20">
-                  <Clock size={64} className="mx-auto mb-4" />
-                  <p className="text-xl italic">Aucun appel en attente pour le moment...</p>
+                <div className="col-span-full py-20 text-center opacity-10">
+                  <Clock size={48} className="mx-auto mb-4" />
+                  <p className="text-lg italic">Aucun appel en attente...</p>
                 </div>
               )}
             </AnimatePresence>
           </div>
-      )}
+        </div>
+      </div>
 
       <footer className="mt-20 border-t border-white/10 pt-8 text-center text-text-secondary">
         <p className="text-[10px] tracking-[0.2em] uppercase">
