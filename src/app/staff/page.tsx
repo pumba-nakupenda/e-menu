@@ -28,27 +28,38 @@ interface ServerCall {
 export default function StaffDashboard() {
   const [calls, setCalls] = useState<ServerCall[]>([]);
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
+  const [pusherStatus, setPusherStatus] = useState<'connecting' | 'connected' | 'error' | 'disconnected'>('disconnected');
 
-  const playNotificationSound = () => {
-    if (!isAudioEnabled) return;
-    const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
-    audio.play().catch(e => console.log("Audio play blocked"));
-  };
+  // ... (playNotificationSound)
 
   useEffect(() => {
-    // 1. Charger les appels existants depuis Sanity
     const fetchCalls = async () => {
       const data = await staffClient.fetch(`*[_type == "notification" && status != "done"] | order(_createdAt desc)`);
       setCalls(data);
     };
     fetchCalls();
 
-    // 2. CONFIGURER PUSHER POUR LE 0 LATENCE
-    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+    // 2. CONFIGURER PUSHER
+    if (!process.env.NEXT_PUBLIC_PUSHER_KEY) {
+        console.error("Clé Pusher manquante !");
+        setPusherStatus('error');
+        return;
+    }
+
+    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
+      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'eu',
+    });
+
+    setPusherStatus('connecting');
+
+    pusher.connection.bind('state_change', (states: any) => {
+        if (states.current === 'connected') setPusherStatus('connected');
+        if (states.current === 'unavailable') setPusherStatus('error');
     });
 
     const channel = pusher.subscribe('staff-notifications');
+    // ... reste du channel.bind
+
     
     // Nouvel appel
     channel.bind('new-call', (data: ServerCall) => {
@@ -149,9 +160,28 @@ export default function StaffDashboard() {
                 <span className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Actifs :</span>
                 <span className="text-accent-gold font-bold">{calls.length}</span>
             </div>
-            <div className="bg-green-500/10 px-4 py-2 rounded-full border border-green-500/20 flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-green-500 text-xs font-bold uppercase tracking-tighter">Pusher Ready</span>
+            
+            {/* Statut Sanity */}
+            <div className="bg-white/5 px-4 py-2 rounded-full border border-white/10 flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                <span className="text-blue-400 text-[10px] font-bold uppercase tracking-tighter">Sanity OK</span>
+            </div>
+
+            {/* Statut Pusher */}
+            <div className={cn(
+                "px-4 py-2 rounded-full border flex items-center gap-2 transition-colors",
+                pusherStatus === 'connected' ? "bg-green-500/10 border-green-500/20 text-green-500" :
+                pusherStatus === 'connecting' ? "bg-orange-500/10 border-orange-500/20 text-orange-500" :
+                "bg-red-500/10 border-red-500/20 text-red-500"
+            )}>
+                <div className={cn(
+                    "w-2 h-2 rounded-full",
+                    pusherStatus === 'connected' ? "bg-green-500" : "bg-current animate-pulse"
+                )} />
+                <span className="text-[10px] font-bold uppercase tracking-tighter">
+                    {pusherStatus === 'connected' ? "Pusher Live" : 
+                     pusherStatus === 'connecting' ? "Pusher Connect..." : "Pusher Offline"}
+                </span>
             </div>
         </div>
       </header>
