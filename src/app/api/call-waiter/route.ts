@@ -20,8 +20,6 @@ const writeClient = createClient({
   token: process.env.SANITY_API_WRITE_TOKEN,
 })
 
-import { unstable_after as after } from 'next/server'
-
 export async function POST(request: Request) {
   try {
     const body = await request.json()
