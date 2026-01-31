@@ -40,6 +40,7 @@ export async function POST(request: Request) {
     console.log("SANITY OK:", result._id);
 
     // 2. Déclencher Pusher (Tentative)
+    let pusherStatus = "sent";
     try {
       await pusher.trigger('staff-notifications', 'new-call', {
         _id: result._id,
@@ -48,12 +49,16 @@ export async function POST(request: Request) {
         status: 'pending',
         _createdAt: result._createdAt || new Date().toISOString()
       })
-      console.log("PUSHER OK");
-    } catch (pusherError) {
-      console.error("ERREUR PUSHER (mais Sanity OK):", pusherError);
+    } catch (pusherError: any) {
+      console.error("ERREUR PUSHER:", pusherError);
+      pusherStatus = `error: ${pusherError.message || 'unknown'}`;
     }
 
-    return NextResponse.json({ success: true, result })
+    return NextResponse.json({ 
+      success: true, 
+      result, 
+      pusherStatus // On renvoie l'état pour débugger
+    })
   } catch (error: any) {
     console.error("DÉTAIL ERREUR API SANITY/PUSHER:", error)
     return NextResponse.json({ 
