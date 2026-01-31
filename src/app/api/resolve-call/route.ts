@@ -1,6 +1,15 @@
 import { createClient } from 'next-sanity'
 import { NextResponse } from 'next/server'
 import { projectId, dataset, apiVersion } from '@/sanity/env'
+import Pusher from 'pusher'
+
+const pusher = new Pusher({
+  appId: process.env.PUSHER_APP_ID!,
+  key: process.env.NEXT_PUBLIC_PUSHER_KEY!,
+  secret: process.env.PUSHER_SECRET!,
+  cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+  useTLS: true
+})
 
 const writeClient = createClient({
   projectId,
@@ -22,7 +31,10 @@ export async function POST(request: Request) {
     const result = await writeClient
       .patch(id)
       .set({ status: status || 'done' })
-      .commit({ visibility: 'sync' }) // Force la synchronisation immédiate
+      .commit({ visibility: 'sync' })
+
+    // Prévenir tout le monde que l'appel est résolu (0 latence pour faire disparaître la carte)
+    await pusher.trigger('staff-notifications', 'resolved-call', { id })
 
     return NextResponse.json({ success: true, result })
   } catch (error: any) {

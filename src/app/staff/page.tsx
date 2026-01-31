@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { createClient } from "next-sanity";
 import { projectId, dataset, apiVersion } from "@/sanity/env";
+import Pusher from 'pusher-js';
 
 // Client spécifique pour le staff : PAS DE CDN pour le temps réel
 const staffClient = createClient({
@@ -28,44 +29,76 @@ export default function StaffDashboard() {
   const [calls, setCalls] = useState<ServerCall[]>([]);
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
 
-  const playNotificationSound = (count: number) => {
+  const playNotificationSound = () => {
     if (!isAudioEnabled) return;
-    // Un seul son élégant pour tous les appels
     const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
     audio.play().catch(e => console.log("Audio play blocked"));
   };
 
   useEffect(() => {
+    // 1. Charger les appels existants depuis Sanity
     const fetchCalls = async () => {
       const data = await staffClient.fetch(`*[_type == "notification" && status != "done"] | order(_createdAt desc)`);
       setCalls(data);
     };
     fetchCalls();
 
+    // 2. CONFIGURER PUSHER POUR LE 0 LATENCE
+    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
+      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+    });
+
+    const channel = pusher.subscribe('staff-notifications');
+    
+    // Nouvel appel
+    channel.bind('new-call', (data: ServerCall) => {
+      setCalls(prev => {
+          // Éviter les doublons si Sanity Listener est aussi actif
+          if (prev.find(c => c._id === data._id)) return prev;
+          return [data, ...prev];
+      });
+      playNotificationSound();
+    });
+
+    // Appel résolu
+    channel.bind('resolved-call', (data: { id: string }) => {
+      setCalls(prev => prev.filter(c => c._id !== data.id));
+    });
+
+    // 3. GARDER SANITY EN FALLBACK (Optionnel mais recommandé pour la robustesse)
     const subscription = staffClient.listen(`*[_type == "notification"]`, {}, { includeResult: true }).subscribe((update: any) => {
       const { transition, result, documentId } = update;
-
       if (transition === 'appear') {
-        const newCall = result as unknown as ServerCall;
-        setCalls(prev => [newCall, ...prev]);
-        playNotificationSound(calls.filter(c => c.tableNumber === newCall.tableNumber).length + 1);
-      } 
-      else if (transition === 'update') {
-        if (result.status === 'done') {
-          // Si le statut passe à "done", on le retire de la liste
-          setCalls(prev => prev.filter(c => c._id !== documentId));
-        } else {
-          // Sinon on met à jour l'appel dans la liste
-          setCalls(prev => prev.map(c => c._id === documentId ? result : c));
-        }
-      }
-      else if (transition === 'disappear') {
+        setCalls(prev => prev.find(c => c._id === documentId) ? prev : [result as unknown as ServerCall, ...prev]);
+      } else if (transition === 'update' && result.status === 'done') {
         setCalls(prev => prev.filter(c => c._id !== documentId));
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, [calls, isAudioEnabled]);
+    return () => {
+      channel.unbind_all();
+      channel.unsubscribe();
+      subscription.unsubscribe();
+    };
+  }, [isAudioEnabled]);
+
+  const handleResolveTable = async (tableNumber: string) => {
+    try {
+      const tableCalls = calls.filter(c => c.tableNumber === tableNumber);
+      // Optimistic UI : on retire tout de suite de l'écran
+      setCalls(prev => prev.filter(c => c.tableNumber !== tableNumber));
+      
+      await Promise.all(tableCalls.map(call => 
+        fetch('/api/resolve-call', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: call._id, status: 'done' }),
+        })
+      ));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const groupedCalls = useMemo(() => {
     const groups: Record<string, { latest: ServerCall; count: number }> = {};
@@ -79,31 +112,13 @@ export default function StaffDashboard() {
         }
       }
     });
-    
     return Object.values(groups).sort((a, b) => 
         new Date(b.latest._createdAt).getTime() - new Date(a.latest._createdAt).getTime()
     );
   }, [calls]);
 
-  const handleResolveTable = async (tableNumber: string) => {
-    try {
-      // Résoudre TOUS les appels en attente pour cette table d'un coup
-      const tableCalls = calls.filter(c => c.tableNumber === tableNumber);
-      await Promise.all(tableCalls.map(call => 
-        fetch('/api/resolve-call', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: call._id, status: 'done' }),
-        })
-      ));
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-black text-white p-8">
-      {/* OVERLAY POUR DÉBLOQUER L'AUDIO */}
       {!isAudioEnabled && (
           <div className="fixed inset-0 z-[200] bg-background/95 backdrop-blur-xl flex items-center justify-center p-6 text-center">
               <div className="max-w-sm space-y-8">
@@ -112,13 +127,13 @@ export default function StaffDashboard() {
                   </div>
                   <div className="space-y-2">
                       <h2 className="text-2xl font-display font-bold italic text-white">Activer le centre</h2>
-                      <p className="text-text-secondary text-sm leading-relaxed">Pour recevoir les alertes sonores en direct, veuillez activer la session.</p>
+                      <p className="text-text-secondary text-sm leading-relaxed">Pusher Channels Activé : 0 Latence</p>
                   </div>
                   <button 
                     onClick={() => setIsAudioEnabled(true)}
                     className="w-full bg-accent-gold text-background font-bold py-5 rounded-2xl shadow-gold hover:scale-[1.02] transition-all"
                   >
-                      DÉMARRER LE SERVICE
+                      DÉMARRER LE SERVICE (FAST)
                   </button>
               </div>
           </div>
@@ -127,16 +142,16 @@ export default function StaffDashboard() {
       <header className="flex justify-between items-center mb-12 border-b border-white/10 pb-6">
         <div>
           <h1 className="text-3xl font-display font-bold italic text-accent-gold">Centre de Service</h1>
-          <p className="text-text-secondary text-sm tracking-widest uppercase">E-MENU Management</p>
+          <p className="text-text-secondary text-sm tracking-widest uppercase">E-MENU FAST-TRACK (Pusher)</p>
         </div>
         <div className="flex gap-4">
             <div className="bg-white/5 px-4 py-2 rounded-full border border-white/10 flex items-center gap-2">
-                <span className="text-white/40 text-[10px] font-bold uppercase tracking-widest">En attente :</span>
+                <span className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Actifs :</span>
                 <span className="text-accent-gold font-bold">{calls.length}</span>
             </div>
-            <div className="bg-accent-gold/10 px-4 py-2 rounded-full border border-accent-gold/20 flex items-center gap-2">
+            <div className="bg-green-500/10 px-4 py-2 rounded-full border border-green-500/20 flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-accent-gold text-xs font-bold uppercase tracking-tighter">Live Connection</span>
+                <span className="text-green-500 text-xs font-bold uppercase tracking-tighter">Pusher Ready</span>
             </div>
         </div>
       </header>
@@ -153,7 +168,6 @@ export default function StaffDashboard() {
                 exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
                 className="bg-surface border border-white/5 p-6 rounded-[32px] shadow-2xl relative overflow-hidden group"
               >
-                {/* Status Bar */}
                 <div className={cn(
                     "absolute top-0 left-0 w-1.5 h-full",
                     latest.type === 'bill' ? "bg-blue-500" : "bg-accent-gold"

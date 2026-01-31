@@ -1,14 +1,23 @@
 import { createClient } from 'next-sanity'
 import { NextResponse } from 'next/server'
 import { projectId, dataset, apiVersion } from '@/sanity/env'
+import Pusher from 'pusher'
 
-// Client avec droit d'écriture (utilisé uniquement côté serveur)
+// Configurer Pusher
+const pusher = new Pusher({
+  appId: process.env.PUSHER_APP_ID!,
+  key: process.env.NEXT_PUBLIC_PUSHER_KEY!,
+  secret: process.env.PUSHER_SECRET!,
+  cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+  useTLS: true
+})
+
 const writeClient = createClient({
   projectId,
   dataset,
   apiVersion,
   useCdn: false,
-  token: process.env.SANITY_API_WRITE_TOKEN, // Ce token doit être ajouté dans .env.local
+  token: process.env.SANITY_API_WRITE_TOKEN,
 })
 
 export async function POST(request: Request) {
@@ -20,25 +29,29 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Numéro de table manquant" }, { status: 400 })
     }
 
-    if (!process.env.SANITY_API_WRITE_TOKEN) {
-      console.error("ERREUR: Le token SANITY_API_WRITE_TOKEN est manquant dans .env.local");
-      return NextResponse.json({ error: "Configuration serveur incomplète (Token manquant)" }, { status: 500 })
-    }
-
+    // 1. Créer dans Sanity (Historique)
     const result = await writeClient.create({
       _type: 'notification',
       tableNumber: tableNumber,
       status: 'pending',
       type: type || 'waiter',
-    }, { visibility: 'sync' }) // Force la synchronisation immédiate pour les listeners
+    }, { visibility: 'sync' })
+
+    // 2. Déclencher Pusher (0 LATENCE)
+    await pusher.trigger('staff-notifications', 'new-call', {
+      _id: result._id,
+      tableNumber,
+      type: type || 'waiter',
+      status: 'pending',
+      _createdAt: new Date().toISOString()
+    })
 
     return NextResponse.json({ success: true, result })
   } catch (error: any) {
-    console.error("DÉTAIL ERREUR API SANITY:", error)
+    console.error("DÉTAIL ERREUR API SANITY/PUSHER:", error)
     return NextResponse.json({ 
-      error: "Erreur Sanity", 
-      message: error.message,
-      details: error.response?.body || "Pas de détails"
+      error: "Erreur serveur", 
+      message: error.message 
     }, { status: 500 })
   }
 }
