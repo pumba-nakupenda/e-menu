@@ -17,6 +17,7 @@ import Image from "next/image";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
 import { cn } from "@/lib/utils";
+import Pusher from 'pusher-js'; // Ajouté
 
 export default function TablePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -40,27 +41,44 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
   const [hasActiveCall, setHasActiveCall] = useState(false);
 
   useEffect(() => {
+    // 1. CHARGEMENT INITIAL (SANITY)
     const fetchActiveCall = async () => {
         const data = await client.fetch(`*[_type == "notification" && tableNumber == $table && status != "done"][0]`, { table: tableNumber });
         setHasActiveCall(!!data);
     };
     fetchActiveCall();
 
+    // 2. TEMPS RÉEL (PUSHER - ULTRA RAPIDE)
+    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
+      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+    });
+
+    const channel = pusher.subscribe('staff-notifications');
+    
+    // Si MA table appelle (depuis n'importe quel appareil sur cette table)
+    channel.bind('new-call', (data: any) => {
+      if (data.tableNumber === tableNumber) setHasActiveCall(true);
+    });
+
+    // Si un serveur valide l'appel de MA table
+    channel.bind('resolved-call', (data: any) => {
+      // On rafraîchit pour être sûr de l'ID ou on compare si on a l'ID
+      fetchActiveCall();
+    });
+
+    // 3. FALLBACK (SANITY LISTENER)
     const subscription = client.listen(`*[_type == "notification" && tableNumber == $table]`, { table: tableNumber }, { includeResult: true })
         .subscribe((update: any) => {
             const { transition, result } = update;
-            if (transition === 'appear') {
-                setHasActiveCall(true);
-            }
-            if (transition === 'update') {
-                setHasActiveCall(result.status !== 'done');
-            }
-            if (transition === 'disappear') {
-                setHasActiveCall(false);
-            }
+            if (transition === 'appear') setHasActiveCall(true);
+            if (transition === 'update') setHasActiveCall(result.status !== 'done');
+            if (transition === 'disappear') setHasActiveCall(false);
         });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      pusher.unsubscribe('staff-notifications');
+      subscription.unsubscribe();
+    };
   }, [tableNumber]);
 
   useEffect(() => {
@@ -167,10 +185,12 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
     
     // --- GESTION DU DOUBLON (ZEN MODE) ---
     if (hasActiveCall) {
-        setIsWaiterModalOpen(true); // On ré-affiche la modale en mode "Rappel"
+        setIsWaiterModalOpen(true);
         return;
     }
 
+    // --- OPTIMISTIC UI ---
+    setHasActiveCall(true); // Allume la cloche immédiatement
     setIsWaiterModalOpen(true);
     setIsSelectionSummaryOpen(false);
 
@@ -182,19 +202,15 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
         body: JSON.stringify({ tableNumber, type }),
       });
       
-      const data = await res.json();
-      
-      if (!res.ok) {
-        console.error("Détails techniques:", data);
-        throw new Error(data.message || data.error || "Erreur inconnue");
-      }
-      
-      console.log("Appel réussi");
+      if (!res.ok) throw new Error("Erreur réseau");
+      console.log("Appel envoyé");
     } catch (err: any) {
       console.error("Échec de l'appel:", err);
-      setHasActiveCall(false); 
+      // En cas d'échec critique seulement, on éteint la cloche
+      // setHasActiveCall(false); 
     } finally {
-      setIsCallingWaiter(false);
+      // On libère le clic quoi qu'il arrive après 2 secondes pour éviter le blocage
+      setTimeout(() => setIsCallingWaiter(false), 2000);
     }
   };
 
