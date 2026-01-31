@@ -35,7 +35,7 @@ export async function POST(request: Request) {
       tableNumber: tableNumber,
       status: 'pending',
       type: type || 'waiter',
-    }, { visibility: 'sync' })
+    })
 
     // 2. Déclencher Pusher (0 LATENCE)
     await pusher.trigger('staff-notifications', 'new-call', {

@@ -28,13 +28,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "ID de notification manquant" }, { status: 400 })
     }
 
+    // 1. Prévenir tout le monde que l'appel est résolu (0 latence pour faire disparaître la carte)
+    await pusher.trigger('staff-notifications', 'resolved-call', { id })
+
+    // 2. Mettre à jour Sanity
     const result = await writeClient
       .patch(id)
       .set({ status: status || 'done' })
-      .commit({ visibility: 'sync' })
-
-    // Prévenir tout le monde que l'appel est résolu (0 latence pour faire disparaître la carte)
-    await pusher.trigger('staff-notifications', 'resolved-call', { id })
+      .commit()
 
     return NextResponse.json({ success: true, result })
   } catch (error: any) {

@@ -30,10 +30,22 @@ export default function StaffDashboard() {
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
   const [pusherStatus, setPusherStatus] = useState<'connecting' | 'connected' | 'error' | 'disconnected'>('disconnected');
 
+  // Précharger l'audio pour éviter la latence
+  const notificationSound = useMemo(() => {
+    if (typeof window !== "undefined") {
+      const audio = new Audio("/notification.mp3");
+      audio.preload = "auto";
+      return audio;
+    }
+    return null;
+  }, []);
+
   const playNotificationSound = () => {
-    if (!isAudioEnabled) return;
-    const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
-    audio.play().catch(e => console.log("Audio play blocked"));
+    if (!isAudioEnabled || !notificationSound) return;
+    
+    // Reset and play immediately
+    notificationSound.currentTime = 0;
+    notificationSound.play().catch(e => console.log("Audio play blocked", e));
   };
 
   useEffect(() => {
@@ -145,7 +157,10 @@ export default function StaffDashboard() {
                       <p className="text-text-secondary text-sm leading-relaxed">Pusher Channels Activé : 0 Latence</p>
                   </div>
                   <button 
-                    onClick={() => setIsAudioEnabled(true)}
+                    onClick={() => {
+                        setIsAudioEnabled(true);
+                        notificationSound?.load();
+                    }}
                     className="w-full bg-accent-gold text-background font-bold py-5 rounded-2xl shadow-gold hover:scale-[1.02] transition-all"
                   >
                       DÉMARRER LE SERVICE (FAST)

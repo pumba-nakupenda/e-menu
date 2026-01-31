@@ -16,8 +16,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
+import FeaturedCarousel from "@/components/FeaturedCarousel";
 import { cn } from "@/lib/utils";
-import Pusher from 'pusher-js'; // Ajouté
+import Pusher from 'pusher-js';
 
 export default function TablePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -218,18 +219,13 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
     <main className="min-h-screen bg-background pb-32">
       <Navbar onSearchClick={() => setIsSearchOpen(true)} lang={lang} onLangChange={setLang} tableNumber={tableNumber} hasActiveCall={hasActiveCall} />
 
-      <section className="relative h-[35vh] w-full overflow-hidden flex items-center justify-center pt-16">
-        <Image src="/images/hero.png" alt="Hero" fill className="object-cover opacity-60 scale-110" priority />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background" />
-        <div className="relative z-10 text-center px-6">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-            <h1 className="font-display font-bold text-[42px] leading-tight text-white italic mb-2 tracking-tight">
-              {lang === "EN" ? "Gastronomic Excellence" : "L'Excellence Gastronomique"}
-            </h1>
-            <p className="text-accent-gold font-sans font-bold tracking-[0.4em] uppercase text-[10px]">Table {tableNumber}</p>
-          </motion.div>
-        </div>
-      </section>
+      <div className="mt-24">
+        <FeaturedCarousel 
+          dishes={dishes.filter(d => d.isFeatured)} 
+          lang={lang} 
+          onSelect={(d) => { setSelectedDish(d); setIsBottomSheetOpen(true); }} 
+        />
+      </div>
 
       <div className="sticky top-16 z-40 bg-background/95 backdrop-blur-md border-b border-white/5">
         <CategoryNav categories={categories.length > 0 ? categories : ["Entrées", "Plats", "Desserts"]} activeCategory={activeCategory} onCategoryChange={setActiveCategory} lang={lang} categoryTranslations={categoryTranslations} />
