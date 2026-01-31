@@ -28,19 +28,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "ID de notification manquant" }, { status: 400 })
     }
 
-    // 1. Signal Pusher immédiat (Non-bloquant)
-    (async () => {
-        try {
-            await pusherServer.trigger('staff-notifications', 'resolved-call', { id, status: status || 'done' });
-            
-            await writeClient
-              .patch(id)
-              .set({ status: status || 'done' })
-              .commit();
-        } catch (err) {
-            console.error("RESOLVE BACKGROUND ERROR:", err);
-        }
-    })();
+    // 1. SIGNAL PUSHER IMMÉDIAT ET ATTENDU
+    await pusherServer.trigger('staff-notifications', 'resolved-call', { id, status: status || 'done' });
+
+    // 2. MISE À JOUR SANITY EN ARRIÈRE-PLAN
+    writeClient
+      .patch(id)
+      .set({ status: status || 'done' })
+      .commit()
+      .catch(err => console.error("Sanity background error:", err));
 
     return NextResponse.json({ success: true })
   } catch (error: any) {

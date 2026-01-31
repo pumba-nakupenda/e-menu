@@ -31,29 +31,25 @@ export async function POST(request: Request) {
     const notificationId = `call-${Date.now()}`;
     const timestamp = new Date().toISOString();
 
-    // Arrière-plan pour Pusher et Sanity
-    (async () => {
-      try {
-        await pusherServer.trigger('staff-notifications', 'new-call', {
-          _id: notificationId,
-          tableNumber,
-          type: type || 'waiter',
-          status: 'pending',
-          _createdAt: timestamp
-        });
-        
-        await writeClient.create({
-          _id: notificationId,
-          _type: 'notification',
-          tableNumber: tableNumber,
-          status: 'pending',
-          type: type || 'waiter',
-        });
-      } catch (err) {
-        console.error("BACKGROUND ERROR:", err);
-      }
-    })();
+    // 1. ON ATTEND PUSHER (C'est l'action la plus rapide et la plus importante)
+    await pusherServer.trigger('staff-notifications', 'new-call', {
+      _id: notificationId,
+      tableNumber,
+      type: type || 'waiter',
+      status: 'pending',
+      _createdAt: timestamp
+    });
 
+    // 2. ON LANCE SANITY EN ARRIÈRE-PLAN (Sans attendre)
+    writeClient.create({
+      _id: notificationId,
+      _type: 'notification',
+      tableNumber: tableNumber,
+      status: 'pending',
+      type: type || 'waiter',
+    }).catch(err => console.error("Sanity background error:", err));
+
+    // 3. RÉPONSE IMMÉDIATE
     return NextResponse.json({ success: true, id: notificationId })
   } catch (error: any) {
     return NextResponse.json({ error: "Erreur serveur", message: error.message }, { status: 500 })
