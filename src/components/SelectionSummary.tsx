@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ClipboardList, Trash2, BellRing } from "lucide-react";
 import Image from "next/image";
+import { Dish } from "./MenuItem";
 interface SelectionSummaryProps {
     isOpen: boolean;
     selectedIds: Set<string>;
