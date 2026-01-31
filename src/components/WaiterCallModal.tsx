@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { UserCheck, X, CheckCircle2, Clock } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface WaiterCallModalProps {
     isOpen: boolean;
