@@ -41,39 +41,71 @@ export async function POST(request: Request) {
 
 
 
-    // 1. Prévenir tout le monde IMMÉDIATEMENT
-
-    await pusher.trigger('staff-notifications', 'resolved-call', { id, status: status || 'done' })
+        // 1. Prévenir tout le monde IMMÉDIATEMENT
 
 
 
-    // 2. Mettre à jour Sanity en arrière-plan
-
-    after(async () => {
-
-        try {
-
-            await writeClient
-
-              .patch(id)
-
-              .set({ status: status || 'done' })
-
-              .commit()
-
-            console.log("SANITY RESOLVE BACKGROUND OK");
-
-        } catch (err) {
-
-            console.error("SANITY RESOLVE ERROR:", err);
-
-        }
-
-    });
+        await pusher.trigger('staff-notifications', 'resolved-call', { id, status: status || 'done' })
 
 
 
-    return NextResponse.json({ success: true })
+    
+
+
+
+        // 2. Mettre à jour Sanity en arrière-plan
+
+
+
+        (async () => {
+
+
+
+            try {
+
+
+
+                await writeClient
+
+
+
+                  .patch(id)
+
+
+
+                  .set({ status: status || 'done' })
+
+
+
+                  .commit()
+
+
+
+                console.log("SANITY RESOLVE BACKGROUND OK");
+
+
+
+            } catch (err) {
+
+
+
+                console.error("SANITY RESOLVE ERROR:", err);
+
+
+
+            }
+
+
+
+        })();
+
+
+
+    
+
+
+
+        return NextResponse.json({ success: true })
 
   } catch (error: any) {
     console.error("Erreur API Resolve Call:", error)

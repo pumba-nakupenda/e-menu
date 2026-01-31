@@ -34,8 +34,10 @@ export async function POST(request: Request) {
     const notificationId = `call-${Date.now()}`;
     const timestamp = new Date().toISOString();
 
-    // TOUT EN ARRIÈRE-PLAN POUR ZÉRO TIMEOUT ET RÉPONSE INSTANTANÉE
-    after(async () => {
+    console.log("API CALL - Table:", tableNumber, "Type:", type);
+
+    // Lancement en arrière-plan sans bloquer la réponse
+    (async () => {
       try {
         // 1. Pusher
         await pusher.trigger('staff-notifications', 'new-call', {
@@ -55,11 +57,11 @@ export async function POST(request: Request) {
           type: type || 'waiter',
         });
         
-        console.log("BACKGROUND TASKS OK");
+        console.log("BACKGROUND TASKS OK for", notificationId);
       } catch (err) {
         console.error("BACKGROUND TASKS ERROR:", err);
       }
-    });
+    })();
 
     // RÉPONSE IMMÉDIATE AU CLIENT
     return NextResponse.json({ success: true, id: notificationId })
