@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { LogOut, User, ChevronRight, History } from "lucide-react";
+import { LogOut, User, ChevronRight, History, Settings, ExternalLink } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,6 +17,9 @@ export default function AccountMenu({ isOpen, onClose, lang, onLangChange }: Acc
     const { data: session } = useSession();
 
     if (!session) return null;
+
+    const adminEmails = process.env.NEXT_PUBLIC_ADMIN_EMAILS?.split(",") || ["oudama@lolly.sn"];
+    const isAdmin = session?.user?.email && adminEmails.includes(session.user.email);
 
     return (
         <AnimatePresence>
@@ -56,6 +59,26 @@ export default function AccountMenu({ isOpen, onClose, lang, onLangChange }: Acc
                         </div>
 
                         <div className="p-6 space-y-2">
+                            {/* ADMIN BUTTON - Only visible to admins */}
+                            {isAdmin && (
+                                <Link 
+                                    href="/admin" 
+                                    onClick={onClose}
+                                    className="w-full flex items-center justify-between p-4 bg-accent-gold rounded-2xl border border-accent-gold/20 hover:scale-[1.02] transition-all group mb-4 shadow-gold"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-xl bg-background/20 flex items-center justify-center text-background">
+                                            <Settings size={20} />
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="text-background font-black text-sm uppercase italic">Console Admin</p>
+                                            <p className="text-background/60 text-[9px] font-bold uppercase tracking-widest">Gérer le Restaurant</p>
+                                        </div>
+                                    </div>
+                                    <ExternalLink size={18} className="text-background/40" />
+                                </Link>
+                            )}
+
                             <Link 
                                 href="/dashboard" 
                                 onClick={onClose}

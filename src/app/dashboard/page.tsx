@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
-import { Bookmark, Clock, Trash2, ChevronLeft, MessageSquare, Edit2, Check, X, Heart, History } from "lucide-react";
+import { Bookmark, Clock, Trash2, ChevronLeft, MessageSquare, Edit2, Check, X, Heart, History, Settings, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
@@ -12,21 +12,7 @@ import { client } from "@/sanity/lib/client";
 import Image from "next/image";
 import { urlFor } from "@/sanity/lib/image";
 import { cn } from "@/lib/utils";
-
-interface SavedItem {
-    id: string;
-    title: string;
-    qty: number;
-    price: number;
-}
-
-interface SavedSelection {
-    id: string;
-    date: string;
-    name: string;
-    total_price: number;
-    items: SavedItem[];
-}
+import { Settings } from "lucide-react";
 
 export default function DashboardPage() {
     const { data: session, status } = useSession();
@@ -38,6 +24,9 @@ export default function DashboardPage() {
     const [editName, setSaveName] = useState("");
     const [lang, setLang] = useState<"FR" | "EN">("FR");
     const [activeTab, setActiveTab] = useState<'history' | 'favorites'>('history');
+
+    const adminEmails = process.env.NEXT_PUBLIC_ADMIN_EMAILS?.split(",") || ["oudama@lolly.sn"];
+    const isAdmin = session?.user?.email && adminEmails.includes(session.user.email);
 
     useEffect(() => {
         if (status === "unauthenticated") router.push("/");
@@ -110,6 +99,30 @@ export default function DashboardPage() {
                         </div>
                     </div>
                 </div>
+
+                {/* Admin Access Panel */}
+                {isAdmin && (
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="mb-10 bg-accent-gold p-6 rounded-[32px] flex items-center justify-between shadow-gold overflow-hidden relative group"
+                    >
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                            <Settings size={120} />
+                        </div>
+                        <div className="relative z-10">
+                            <h2 className="text-background font-display font-black text-2xl italic uppercase tracking-tighter">Administration</h2>
+                            <p className="text-background/60 text-xs font-bold uppercase tracking-widest">Gérer la carte et les menus</p>
+                        </div>
+                        <Link 
+                            href="/admin"
+                            className="relative z-10 bg-background text-accent-gold px-6 py-3 rounded-2xl font-bold text-sm shadow-xl active:scale-95 transition-all flex items-center gap-2"
+                        >
+                            Accéder au Backend
+                            <ExternalLink size={16} />
+                        </Link>
+                    </motion.div>
+                )}
 
                 {/* Tabs */}
                 <div className="flex gap-4 mb-8 bg-white/5 p-1 rounded-2xl">

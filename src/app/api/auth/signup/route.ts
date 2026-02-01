@@ -57,7 +57,7 @@ export async function POST(req: Request) {
 
     try {
       await resend.emails.send({
-        from: "E-MENU <onboarding@resend.dev>", // À changer avec votre domaine une fois configuré
+        from: "E-MENU <oudama@lolly.sn>",
         to: email,
         subject: "Vérifiez votre compte E-MENU",
         html: `

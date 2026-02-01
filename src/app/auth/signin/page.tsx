@@ -40,8 +40,10 @@ function SignInContent() {
 
                 if (!res.ok) throw new Error(data.error || "Une erreur est survenue");
 
-                setMessage("Compte créé ! Vous pouvez vous connecter.");
+                setMessage("Un email de confirmation vient de vous être envoyé. Veuillez vérifier votre boîte de réception.");
                 setIsSignUp(false);
+                setEmail("");
+                setName("");
                 setPassword("");
             } catch (err: any) {
                 setError(err.message);
