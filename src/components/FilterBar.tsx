@@ -103,8 +103,8 @@ export default function FilterBar({ filters, activeFilter, onFilterChange, icons
                     className={cn(
                         "px-6 py-2.5 rounded-full text-[12px] font-bold border transition-all duration-300 whitespace-nowrap flex items-center gap-2",
                         activeFilter === filter
-                            ? "bg-accent-gold border-accent-gold text-background shadow-[0_4px_15px_rgba(212,175,55,0.4)] scale-105"
-                            : "bg-white/5 border-white/5 text-text-secondary hover:border-white/20"
+                            ? "bg-accent-gold border-accent-gold text-background shadow-gold scale-105"
+                            : "bg-text-primary/5 border-border text-text-secondary hover:border-accent-gold/30"
                     )}
                 >
                     {renderIcon(filter)}

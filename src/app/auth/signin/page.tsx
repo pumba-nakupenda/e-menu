@@ -69,7 +69,7 @@ function SignInContent() {
     };
 
     return (
-        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative overflow-hidden transition-colors duration-300">
             {/* Background Decor */}
             <div className="absolute top-[-10%] -left-20 w-64 h-64 bg-accent-gold/5 rounded-full blur-3xl" />
             <div className="absolute bottom-[-10%] -right-20 w-96 h-96 bg-accent-gold/10 rounded-full blur-3xl" />
@@ -77,9 +77,9 @@ function SignInContent() {
             <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-md bg-surface border border-white/5 rounded-[40px] p-8 md:p-12 shadow-2xl relative z-10"
+                className="w-full max-w-md bg-surface border border-border rounded-[40px] p-8 md:p-12 shadow-2xl relative z-10"
             >
-                <Link href="/" className="inline-flex items-center gap-2 text-white/40 hover:text-accent-gold transition-colors mb-8 text-sm font-medium">
+                <Link href="/" className="inline-flex items-center gap-2 text-text-secondary hover:text-accent-gold transition-colors mb-8 text-sm font-medium">
                     <ChevronLeft size={18} />
                     Retour au menu
                 </Link>
@@ -90,7 +90,7 @@ function SignInContent() {
                             <path d="M11 9H9V2H7V9H5V2H3V9C3 11.12 4.66 12.84 6.75 12.97V22H9.25V12.97C11.34 12.84 13 11.12 13 9V2H11V9ZM16 6V14h3v8h2V2c-2.76 0-5 2.24-5 4z" />
                         </svg>
                     </div>
-                    <h1 className="font-display font-bold text-3xl text-white mb-2 italic uppercase tracking-tighter">
+                    <h1 className="font-display font-bold text-3xl text-text-primary mb-2 italic uppercase tracking-tighter">
                         {isSignUp ? "Créer un compte" : "Se connecter"}
                     </h1>
                     <p className="text-text-secondary text-sm">
@@ -110,40 +110,40 @@ function SignInContent() {
                                 exit={{ opacity: 0, height: 0 }}
                                 className="relative overflow-hidden"
                             >
-                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary/50" size={18} />
                                 <input 
                                     type="text" 
                                     placeholder="Nom complet"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     required={isSignUp}
-                                    className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 text-white placeholder:text-white/20 focus:border-accent-gold outline-none transition-all"
+                                    className="w-full h-14 bg-text-primary/5 border border-border rounded-2xl pl-12 pr-4 text-text-primary placeholder:text-text-secondary/50 focus:border-accent-gold outline-none transition-all"
                                 />
                             </motion.div>
                         )}
                     </AnimatePresence>
 
                     <div className="relative">
-                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary/50" size={18} />
                         <input 
                             type="email" 
                             placeholder="Email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 text-white placeholder:text-white/20 focus:border-accent-gold outline-none transition-all"
+                            className="w-full h-14 bg-text-primary/5 border border-border rounded-2xl pl-12 pr-4 text-text-primary placeholder:text-text-secondary/50 focus:border-accent-gold outline-none transition-all"
                         />
                     </div>
 
                     <div className="relative">
-                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary/50" size={18} />
                         <input 
                             type="password" 
                             placeholder="Mot de passe"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 text-white placeholder:text-white/20 focus:border-accent-gold outline-none transition-all"
+                            className="w-full h-14 bg-text-primary/5 border border-border rounded-2xl pl-12 pr-4 text-text-primary placeholder:text-text-secondary/50 focus:border-accent-gold outline-none transition-all"
                         />
                     </div>
 
@@ -167,14 +167,14 @@ function SignInContent() {
                 </div>
 
                 <div className="flex items-center gap-4 py-2 mb-6">
-                    <div className="h-px bg-white/5 flex-1" />
-                    <span className="text-[10px] text-white/20 font-bold uppercase tracking-widest text-center">Ou continuer avec</span>
-                    <div className="h-px bg-white/5 flex-1" />
+                    <div className="h-px bg-border flex-1" />
+                    <span className="text-[10px] text-text-secondary/60 font-bold uppercase tracking-widest text-center">Ou continuer avec</span>
+                    <div className="h-px bg-border flex-1" />
                 </div>
 
                 <button
                     onClick={() => signIn("google", { callbackUrl })}
-                    className="w-full h-14 bg-white text-background font-bold rounded-2xl flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl"
+                    className="w-full h-14 bg-text-primary/5 hover:bg-text-primary/10 border border-border text-text-primary font-bold rounded-2xl flex items-center justify-center gap-3 active:scale-95 transition-all shadow-sm"
                 >
                     <svg width="20" height="20" viewBox="0 0 24 24">
                         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>

@@ -107,13 +107,13 @@ export default function SearchOverlay({
         const qty = cart[dishId] || 0;
         return (
             <div className={cn(
-                "flex items-center bg-white/5 border border-white/10 rounded-full p-1",
+                "flex items-center bg-text-primary/5 border border-border rounded-full p-1",
                 isSmall ? "gap-2" : "gap-4"
             )}>
                 {qty > 0 && (
                     <>
-                        <button onClick={() => onUpdateQuantity(dishId, -1)} className="p-1 text-white/40"><Minus size={isSmall ? 14 : 18} /></button>
-                        <span className="text-white font-bold min-w-[12px] text-center">{qty}</span>
+                        <button onClick={() => onUpdateQuantity(dishId, -1)} className="p-1 text-text-primary/40"><Minus size={isSmall ? 14 : 18} /></button>
+                        <span className="text-text-primary font-bold min-w-[12px] text-center">{qty}</span>
                     </>
                 )}
                 <button onClick={() => onUpdateQuantity(dishId, 1)} className="p-1 text-accent-gold"><Plus size={isSmall ? 14 : 18} strokeWidth={3} /></button>
@@ -128,7 +128,7 @@ export default function SearchOverlay({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-[110] bg-background px-4 pt-6 overflow-y-auto"
+                    className="fixed inset-0 z-[110] bg-background px-4 pt-6 overflow-y-auto transition-colors duration-300"
                 >
                     <div className="flex items-center gap-4 mb-6">
                         <div className="relative flex-1">
@@ -141,12 +141,12 @@ export default function SearchOverlay({
                                 placeholder={lang === "EN" ? "Search for a dish, a wine..." : "Rechercher un plat, un vin..."}
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
-                                className="w-full bg-surface/50 border-2 border-accent-gold/50 rounded-full py-3.5 pl-12 pr-12 text-white placeholder:text-text-secondary focus:border-accent-gold focus:outline-none transition-all shadow-gold"
+                                className="w-full bg-surface border-2 border-accent-gold/50 rounded-full py-3.5 pl-12 pr-12 text-text-primary placeholder:text-text-secondary focus:border-accent-gold focus:outline-none transition-all shadow-gold"
                             />
                             {query && (
                                 <button
                                     onClick={() => setQuery("")}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary hover:text-white"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary"
                                 >
                                     <X size={20} />
                                 </button>
@@ -154,7 +154,7 @@ export default function SearchOverlay({
                         </div>
                         <button
                             onClick={onClose}
-                            className="text-white font-medium text-[16px] pr-2"
+                            className="text-text-primary font-bold text-[16px] pr-2 transition-colors"
                         >
                             {lang === "EN" ? "Close" : "Fermer"}
                         </button>
@@ -173,10 +173,10 @@ export default function SearchOverlay({
                                         setActiveBadge(null);
                                     }}
                                     className={cn(
-                                        "px-5 py-2 rounded-full text-[13px] font-bold border transition-all whitespace-nowrap flex items-center",
+                                        "px-5 py-2 rounded-full text-[13px] font-bold border transition-all whitespace-nowrap flex items-center shadow-sm",
                                         activeCategory === cat
                                             ? "bg-accent-gold border-accent-gold text-background"
-                                            : "bg-surface/30 border-white/5 text-text-secondary"
+                                            : "bg-surface border-border text-text-secondary"
                                     )}
                                 >
                                     {lang === "EN" ? (filterTranslationsLocal[cat] || cat) : cat}
@@ -196,10 +196,10 @@ export default function SearchOverlay({
                                         key={badge}
                                         onClick={() => setActiveBadge(activeBadge === badge ? null : badge)}
                                         className={cn(
-                                            "px-5 py-2 rounded-full text-[13px] font-bold border transition-all whitespace-nowrap flex items-center",
+                                            "px-5 py-2 rounded-full text-[13px] font-bold border transition-all whitespace-nowrap flex items-center shadow-sm",
                                             activeBadge === badge
                                                 ? "bg-accent-gold border-accent-gold text-background shadow-gold"
-                                                : "bg-surface/30 border-white/5 text-text-secondary hover:border-white/20"
+                                                : "bg-surface border-border text-text-secondary hover:border-accent-gold/30"
                                         )}
                                     >
                                         {renderFilterIcon(badge)}
@@ -217,13 +217,13 @@ export default function SearchOverlay({
                                     <h2 className="text-[11px] font-bold text-text-secondary uppercase tracking-[0.2em] mb-4">
                                         {lang === "EN" ? "Best Match" : "Meilleur Résultat"}
                                     </h2>
-                                    <div className="relative bg-surface p-5 rounded-[32px] border border-white/5">
+                                    <div className="relative bg-surface p-5 rounded-[32px] border border-border shadow-card">
                                         <div className="flex items-center gap-5 mb-6">
                                             <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-accent-gold/30 shrink-0">
                                                 <Image src={topMatch.image} alt={topMatch.title} fill className="object-cover" />
                                             </div>
                                             <div className="flex-1">
-                                                <h3 className="font-display font-bold text-xl text-white mb-1 italic">
+                                                <h3 className="font-display font-bold text-xl text-text-primary mb-1 italic">
                                                     {lang === "EN" && topMatch.translations?.en ? topMatch.translations.en.title : topMatch.title}
                                                 </h3>
                                                 <span className="font-bold text-accent-gold">{formatPrice(topMatch.price)}</span>
@@ -232,7 +232,7 @@ export default function SearchOverlay({
                                         </div>
                                         <button
                                             onClick={() => onSelectDish(topMatch)}
-                                            className="w-full bg-white/5 hover:bg-white/10 text-white font-bold py-3.5 rounded-[20px] transition-colors"
+                                            className="w-full bg-text-primary/5 hover:bg-text-primary/10 text-text-primary font-bold py-3.5 rounded-[20px] transition-colors"
                                         >
                                             {lang === "EN" ? "View Details" : "Détails du plat"}
                                         </button>
@@ -255,12 +255,12 @@ export default function SearchOverlay({
                                                     className="flex items-center gap-4 flex-1 cursor-pointer"
                                                     onClick={() => onSelectDish(dish)}
                                                 >
-                                                    <div className="relative w-14 h-14 rounded-full overflow-hidden shrink-0 border border-white/10">
+                                                    <div className="relative w-14 h-14 rounded-full overflow-hidden shrink-0 border border-border shadow-sm">
                                                         <Image src={dish.image} alt={dish.title} fill className="object-cover" />
                                                     </div>
-                                                    <div className="flex-1 border-b border-white/5 pb-4 group-hover:border-accent-gold/30 transition-colors">
+                                                    <div className="flex-1 border-b border-border pb-4 group-hover:border-accent-gold/30 transition-colors">
                                                         <div className="flex justify-between items-center mb-1">
-                                                            <h4 className="font-display font-semibold text-white">
+                                                            <h4 className="font-display font-semibold text-text-primary">
                                                                 {lang === "EN" && dish.translations?.en ? dish.translations.en.title : dish.title}
                                                             </h4>
                                                             <span className="text-sm font-bold text-accent-gold">{formatPrice(dish.price)}</span>

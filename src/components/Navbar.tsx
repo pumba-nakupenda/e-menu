@@ -7,6 +7,8 @@ import Link from "next/link";
 import { useState } from "react";
 import AccountMenu from "./AccountMenu";
 
+import ThemeToggle from "./ThemeToggle";
+
 interface NavbarProps {
     onSearchClick: () => void;
     lang: "FR" | "EN";
@@ -19,7 +21,7 @@ export default function Navbar({ onSearchClick, lang, onLangChange }: NavbarProp
 
     return (
         <>
-            <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5">
+            <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border shadow-sm transition-colors duration-300">
                 <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2">
@@ -28,14 +30,14 @@ export default function Navbar({ onSearchClick, lang, onLangChange }: NavbarProp
                                 <path d="M11 9H9V2H7V9H5V2H3V9C3 11.12 4.66 12.84 6.75 12.97V22H9.25V12.97C11.34 12.84 13 11.12 13 9V2H11V9ZM16 6V14h3v8h2V2c-2.76 0-5 2.24-5 4z" />
                             </svg>
                         </div>
-                        <span className="font-display font-bold text-xl tracking-tight italic">E-MENU</span>
+                        <span className="font-display font-bold text-xl tracking-tight italic text-text-primary">E-MENU</span>
                     </Link>
 
                     {/* Right Actions */}
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                         <button
                             onClick={onSearchClick}
-                            className="p-1 hover:text-accent-gold transition-colors text-white"
+                            className="p-1 hover:text-accent-gold transition-colors text-text-primary"
                         >
                             <Search size={22} strokeWidth={1.5} />
                         </button>
@@ -43,15 +45,18 @@ export default function Navbar({ onSearchClick, lang, onLangChange }: NavbarProp
                         {/* Language Toggle */}
                         <button
                             onClick={() => onLangChange(lang === "FR" ? "EN" : "FR")}
-                            className="flex items-center gap-1.5 text-[11px] font-bold tracking-widest bg-white/5 px-2.5 py-1.5 rounded-full border border-white/5 transition-all active:scale-95"
+                            className="flex items-center gap-1.5 text-[11px] font-bold tracking-widest bg-surface/50 px-2.5 py-1.5 rounded-full border border-border transition-all active:scale-95"
                         >
                             <span className={lang === "FR" ? "text-accent-gold" : "text-text-secondary"}>FR</span>
-                            <span className="w-px h-2.5 bg-white/10" />
+                            <span className="w-px h-2.5 bg-border" />
                             <span className={lang === "EN" ? "text-accent-gold" : "text-text-secondary"}>EN</span>
                         </button>
 
+                        {/* Theme Toggle */}
+                        <ThemeToggle />
+
                         {/* Auth Section */}
-                        <div className="flex items-center ml-1 border-l border-white/10 pl-4">
+                        <div className="flex items-center ml-1 border-l border-border pl-4">
                             {session ? (
                                 <button
                                     onClick={() => setIsAccountMenuOpen(true)}
@@ -70,7 +75,7 @@ export default function Navbar({ onSearchClick, lang, onLangChange }: NavbarProp
                             ) : (
                                 <button
                                     onClick={() => signIn()}
-                                    className="text-white/70 hover:text-accent-gold transition-colors p-1"
+                                    className="text-text-primary hover:text-accent-gold transition-colors p-1"
                                 >
                                     <User size={22} strokeWidth={1.5} />
                                 </button>

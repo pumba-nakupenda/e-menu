@@ -106,16 +106,16 @@ export default function SelectionSummary({ isOpen, cart, dishes, onClose, onUpda
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
                         className="relative w-full max-w-md bg-surface rounded-t-[40px] shadow-2xl flex flex-col max-h-[90vh]"
                     >
-                        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-white/20 rounded-full z-20" />
+                        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-text-secondary/20 rounded-full z-20" />
 
-                        <div className="px-8 pt-10 pb-6 flex justify-between items-center border-b border-white/5">
+                        <div className="px-8 pt-10 pb-6 flex justify-between items-center border-b border-border">
                             <div className="flex items-center gap-3">
                                 <ClipboardList className="text-accent-gold" size={24} />
-                                <h2 className="font-display font-bold text-2xl text-white italic">
+                                <h2 className="font-display font-bold text-2xl text-text-primary italic">
                                     {lang === "EN" ? "My Selection" : "MaSélection"}
                                 </h2>
                             </div>
-                            <button onClick={onClose} className="p-2 text-text-secondary hover:text-white transition-colors">
+                            <button onClick={onClose} className="p-2 text-text-secondary hover:text-text-primary transition-colors">
                                 <X size={24} />
                             </button>
                         </div>
@@ -148,24 +148,24 @@ export default function SelectionSummary({ isOpen, cart, dishes, onClose, onUpda
                                     </div>
                                     {selectedDishes.map(dish => (
                                         <div key={dish.id} className="flex items-center gap-4 group">
-                                            <div className="relative w-16 h-16 rounded-2xl overflow-hidden shrink-0 border border-white/10">
+                                            <div className="relative w-16 h-16 rounded-2xl overflow-hidden shrink-0 border border-border">
                                                 <Image src={dish.image} alt={dish.title} fill className="object-cover" />
                                             </div>
                                             <div className="flex-1">
-                                                <h4 className="font-display font-semibold text-white text-[16px] mb-0.5">
+                                                <h4 className="font-display font-semibold text-text-primary text-[16px] mb-0.5">
                                                     {lang === "EN" && dish.translations?.en ? dish.translations.en.title : dish.title}
                                                 </h4>
                                                 <p className="text-[13px] text-accent-gold font-bold">{formatPrice(dish.price)}</p>
                                             </div>
                                             
-                                            <div className="flex items-center gap-3 bg-white/5 rounded-full p-1 border border-white/5">
+                                            <div className="flex items-center gap-3 bg-text-primary/5 rounded-full p-1 border border-border">
                                                 <button 
                                                     onClick={() => onUpdateQuantity(dish.id, -1)}
-                                                    className="w-7 h-7 flex items-center justify-center text-white/40"
+                                                    className="w-7 h-7 flex items-center justify-center text-text-primary/40"
                                                 >
                                                     <Minus size={14} />
                                                 </button>
-                                                <span className="text-white font-bold text-sm min-w-[12px] text-center">{cart[dish.id]}</span>
+                                                <span className="text-text-primary font-bold text-sm min-w-[12px] text-center">{cart[dish.id]}</span>
                                                 <button 
                                                     onClick={() => onUpdateQuantity(dish.id, 1)}
                                                     className="w-7 h-7 flex items-center justify-center text-accent-gold"
@@ -176,15 +176,15 @@ export default function SelectionSummary({ isOpen, cart, dishes, onClose, onUpda
                                         </div>
                                     ))}
                                     
-                                    <div className="pt-4 border-t border-white/5">
+                                    <div className="pt-4 border-t border-border">
                                         <div className="flex justify-between items-center px-2">
                                             <span className="text-text-secondary font-medium">Total</span>
-                                            <span className="text-2xl font-bold text-white">{formatPrice(totalPrice)}</span>
+                                            <span className="text-2xl font-bold text-text-primary">{formatPrice(totalPrice)}</span>
                                         </div>
                                     </div>
                                 </>
                             ) : (
-                                <div className="text-center py-20 opacity-30 text-white italic">
+                                <div className="text-center py-20 opacity-30 text-text-primary italic">
                                     <ClipboardList size={48} className="mx-auto mb-4 opacity-20" />
                                     <p>{lang === "EN" ? "Your selection is empty" : "Aucun plat dans votre sélection"}</p>
                                 </div>
@@ -206,7 +206,7 @@ export default function SelectionSummary({ isOpen, cart, dishes, onClose, onUpda
                                                 placeholder={lang === "EN" ? "Name this selection..." : "Nommez cette sélection..."}
                                                 value={saveName}
                                                 onChange={(e) => setSaveName(e.target.value)}
-                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:border-accent-gold outline-none transition-all"
+                                                className="w-full bg-text-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary placeholder:text-text-primary/20 focus:border-accent-gold outline-none transition-all"
                                             />
                                         </motion.div>
                                     )}
@@ -235,7 +235,7 @@ export default function SelectionSummary({ isOpen, cart, dishes, onClose, onUpda
                                     ) : (
                                         <button 
                                             onClick={() => signIn()}
-                                            className="w-full bg-white/5 border border-white/10 text-white/70 font-bold h-[56px] rounded-[22px] flex items-center justify-center gap-3 active:scale-95 transition-all"
+                                            className="w-full bg-text-primary/5 border border-border text-text-primary/70 font-bold h-[56px] rounded-[22px] flex items-center justify-center gap-3 active:scale-95 transition-all"
                                         >
                                             <Heart size={18} />
                                             <span className="uppercase tracking-wider text-[14px]">
@@ -248,7 +248,7 @@ export default function SelectionSummary({ isOpen, cart, dishes, onClose, onUpda
                             
                             <button
                                 onClick={onClose}
-                                className="w-full h-[40px] text-white/30 text-[12px] uppercase tracking-widest font-bold"
+                                className="w-full h-[40px] text-text-primary/30 text-[12px] uppercase tracking-widest font-bold"
                             >
                                 {lang === "EN" ? "Close" : "Fermer"}
                             </button>

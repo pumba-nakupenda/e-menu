@@ -1,13 +1,49 @@
 @import "tailwindcss";
 
+@layer base {
+  :root {
+    /* Premium Light Mode (Champagne/Ivory Palette) */
+    --background: #f0f2f5; /* Fond gris très clair pour la page */
+    --surface: #ffffff;    /* Cartes en blanc pur pour le contraste */
+    --text-primary: #1C1C1C;
+    --text-secondary: #6B6B6B;
+    --accent-gold: #AF8F2C;
+    --accent-soft-gold: rgba(175, 143, 44, 0.08);
+    --border: rgba(0, 0, 0, 0.08);
+    
+    --shadow-card-val: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-modal-val: 0 20px 40px -15px rgba(0, 0, 0, 0.1);
+    --shadow-gold-val: 0 8px 20px rgba(175, 143, 44, 0.15);
+  }
+
+  :root[class~="dark"] {
+    /* Deep Luxury Dark Mode */
+    --background: #0a0a0a;
+    --surface: #1c1c1e;
+    --text-primary: #ffffff;
+    --text-secondary: #8e8e93;
+    --accent-gold: #d4af37;
+    --accent-soft-gold: rgba(212, 175, 55, 0.15);
+    --border: rgba(255, 255, 255, 0.08);
+
+    --shadow-card-val: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-modal-val: 0 8px 32px rgba(0, 0, 0, 0.6);
+    --shadow-gold-val: 0 8px 24px rgba(212, 175, 55, 0.2);
+  }
+
+  body {
+    @apply bg-background text-text-primary font-sans antialiased transition-colors duration-500;
+  }
+}
+
 @theme {
-  --color-background: #0a0a0a;
-  --color-surface: #1c1c1e;
-  --color-text-primary: #ffffff;
-  --color-text-secondary: #8e8e93;
-  --color-accent-gold: #d4af37;
-  --color-accent-soft-gold: rgba(212, 175, 55, 0.15);
-  --color-border: rgba(255, 255, 255, 0.08);
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-accent-gold: var(--accent-gold);
+  --color-accent-soft-gold: var(--accent-soft-gold);
+  --color-border: var(--border);
 
   --font-display: var(--font-playfair), serif;
   --font-sans: var(--font-inter), sans-serif;
@@ -17,18 +53,13 @@
   --radius-large: 24px;
   --radius-full: 9999px;
 
-  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-modal: 0 8px 32px rgba(0, 0, 0, 0.6);
-  --shadow-gold: 0 8px 24px rgba(212, 175, 55, 0.2);
+  --shadow-card: var(--shadow-card-val);
+  --shadow-modal: var(--shadow-modal-val);
+  --shadow-gold: var(--shadow-gold-val);
 
   @keyframes slideUp {
-    0% {
-      transform: translateY(100%);
-    }
-
-    100% {
-      transform: translateY(0);
-    }
+    0% { transform: translateY(100%); }
+    100% { transform: translateY(0); }
   }
 
   @keyframes shake {
@@ -43,12 +74,6 @@
   }
 }
 
-@layer base {
-  body {
-    @apply bg-background text-text-primary font-sans antialiased;
-  }
-}
-
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -59,8 +84,5 @@
 }
 
 .glass {
-  background: rgba(28, 28, 30, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  @apply bg-surface/80 backdrop-blur-md border border-border;
 }

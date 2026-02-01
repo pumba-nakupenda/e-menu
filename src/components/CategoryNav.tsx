@@ -43,7 +43,7 @@ export default function CategoryNav({
     };
 
     return (
-        <div className="sticky top-16 z-40 bg-background">
+        <div className="sticky top-16 z-40 bg-surface/80 backdrop-blur-md transition-colors duration-300">
             <div className="max-w-7xl mx-auto flex px-4 items-center gap-8 border-b border-border overflow-x-auto no-scrollbar">
                 {categories.map((cat) => (
                     <button

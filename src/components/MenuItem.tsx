@@ -95,7 +95,6 @@ export default function MenuItem({ dish, quantity, onUpdateQuantity, onShowDetai
     const toggleFavorite = async (e: React.MouseEvent) => {
         e.stopPropagation();
         if (!session?.user?.email) {
-            // Au lieu d'une alerte, on propose la connexion
             signIn();
             return;
         }
@@ -131,11 +130,11 @@ export default function MenuItem({ dish, quantity, onUpdateQuantity, onShowDetai
     };
 
     const QuantityControls = ({ isSmall = false }) => (
-        <div className={cn("flex items-center bg-black/40 backdrop-blur-md rounded-full border border-white/20 p-1", isSmall ? "gap-2" : "gap-3")}>
+        <div className={cn("flex items-center backdrop-blur-md rounded-full border p-1", isSmall ? "gap-2" : "gap-3", "bg-text-primary/5 border-border")}>
             {quantity > 0 && (
                 <>
-                    <button onClick={(e) => { e.stopPropagation(); onUpdateQuantity(-1); }} className="w-7 h-7 rounded-full flex items-center justify-center text-white/70 hover:text-white transition-colors"><Minus size={isSmall ? 14 : 16} /></button>
-                    <span className="text-white font-bold text-[14px] min-w-[12px] text-center">{quantity}</span>
+                    <button onClick={(e) => { e.stopPropagation(); onUpdateQuantity(-1); }} className="w-7 h-7 rounded-full flex items-center justify-center text-text-primary/70 hover:text-text-primary transition-colors"><Minus size={isSmall ? 14 : 16} /></button>
+                    <span className="text-text-primary font-bold text-[14px] min-w-[12px] text-center">{quantity}</span>
                 </>
             )}
             <button onClick={(e) => { e.stopPropagation(); onUpdateQuantity(1); }} className={cn("rounded-full flex items-center justify-center transition-all", quantity > 0 ? "w-7 h-7 text-accent-gold" : "w-8 h-8 bg-accent-gold text-background shadow-gold")}><Plus size={isSmall ? 14 : 16} strokeWidth={3} /></button>
@@ -144,7 +143,7 @@ export default function MenuItem({ dish, quantity, onUpdateQuantity, onShowDetai
 
     if (dish.isFeatured) {
         return (
-            <div onClick={() => onShowDetails(dish)} className="relative bg-surface rounded-[24px] overflow-hidden group cursor-pointer border border-white/5 hover:border-accent-gold/40 transition-all duration-300">
+            <div onClick={() => onShowDetails(dish)} className="relative bg-surface rounded-[24px] overflow-hidden group cursor-pointer border border-border hover:border-accent-gold/40 transition-all duration-300 shadow-card">
                 <div className="relative aspect-[1.5] w-full">
                     <Image src={dish.image} alt={dish.title} fill className="object-cover transition-transform duration-700 group-hover:scale-105" />
                     <div className="absolute top-4 left-4 flex gap-2">
@@ -163,7 +162,7 @@ export default function MenuItem({ dish, quantity, onUpdateQuantity, onShowDetai
                 <div className="p-5">
                     <div className="flex justify-between items-start mb-2">
                         <div className="flex flex-col gap-1">
-                            <h3 className="font-display font-semibold text-[22px] text-white tracking-tight">{dish.title}</h3>
+                            <h3 className="font-display font-semibold text-[22px] text-text-primary tracking-tight">{dish.title}</h3>
                             {dish.rating && <div className="flex items-center gap-1"><Star size={12} className="fill-accent-gold text-accent-gold" /><span className="text-[12px] font-bold text-accent-gold/80">{dish.rating}</span></div>}
                         </div>
                         <div className="flex flex-col items-end"><span className="font-sans font-bold text-[18px] text-accent-gold tracking-tight">{formatPrice(dish.price)}</span><div className="flex gap-1.5 mt-1">{renderBadges()}</div></div>
@@ -175,15 +174,15 @@ export default function MenuItem({ dish, quantity, onUpdateQuantity, onShowDetai
     }
 
     return (
-        <div onClick={() => !dish.isSoldOut && onShowDetails(dish)} className={cn("relative bg-surface p-3.5 rounded-[24px] flex gap-4 transition-all duration-300 border border-white/5", dish.isSoldOut ? "opacity-40 grayscale pointer-events-none" : "hover:border-accent-gold/20 cursor-pointer")}>
+        <div onClick={() => !dish.isSoldOut && onShowDetails(dish)} className={cn("relative bg-surface p-3.5 rounded-[24px] flex gap-4 transition-all duration-300 border border-border shadow-card", dish.isSoldOut ? "opacity-40 grayscale pointer-events-none" : "hover:border-accent-gold/20 cursor-pointer")}>
             <div className="relative w-[100px] h-[100px] shrink-0 rounded-[20px] overflow-hidden">
                 <Image src={dish.image} alt={dish.title} fill className="object-cover" />
-                {dish.isSoldOut && <div className="absolute inset-0 bg-background/60 flex items-center justify-center"><span className="bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-bold text-white border border-white/10">ÉPUISÉ</span></div>}
+                {dish.isSoldOut && <div className="absolute inset-0 bg-background/60 flex items-center justify-center"><span className="bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-bold text-white border border-white/20">ÉPUISÉ</span></div>}
             </div>
             <div className="flex-1 py-1">
                 <div className="flex justify-between items-start mb-1">
                     <div className="flex flex-col gap-0.5">
-                        <h3 className="font-display font-semibold text-[17px] text-white tracking-tight line-clamp-1">{dish.title}</h3>
+                        <h3 className="font-display font-semibold text-[17px] text-text-primary tracking-tight line-clamp-1">{dish.title}</h3>
                         <div className="flex items-center gap-2">
                             {dish.rating && <div className="flex items-center gap-1"><Star size={10} className="fill-accent-gold text-accent-gold" /><span className="text-[10px] font-bold text-accent-gold/80">{dish.rating}</span></div>}
                             <button onClick={toggleFavorite} className="text-accent-gold/40 hover:text-accent-gold transition-all active:scale-125">

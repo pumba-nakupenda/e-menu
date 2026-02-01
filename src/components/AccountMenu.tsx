@@ -40,9 +40,9 @@ export default function AccountMenu({ isOpen, onClose, lang, onLangChange }: Acc
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
                         className="relative w-full max-w-md bg-surface rounded-t-[40px] shadow-2xl overflow-hidden flex flex-col"
                     >
-                        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-white/20 rounded-full" />
+                        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-text-secondary/20 rounded-full" />
 
-                        <div className="px-8 pt-12 pb-8 flex flex-col items-center text-center border-b border-white/5">
+                        <div className="px-8 pt-12 pb-8 flex flex-col items-center text-center border-b border-border">
                             <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-accent-gold mb-4 p-1">
                                 <div className="relative w-full h-full rounded-full overflow-hidden">
                                     {session.user?.image ? (
@@ -54,7 +54,7 @@ export default function AccountMenu({ isOpen, onClose, lang, onLangChange }: Acc
                                     )}
                                 </div>
                             </div>
-                            <h2 className="text-xl font-display font-bold text-white italic">{session.user?.name}</h2>
+                            <h2 className="text-xl font-display font-bold text-text-primary italic">{session.user?.name}</h2>
                             <p className="text-text-secondary text-sm opacity-60">{session.user?.email}</p>
                         </div>
 
@@ -82,18 +82,18 @@ export default function AccountMenu({ isOpen, onClose, lang, onLangChange }: Acc
                             <Link 
                                 href="/dashboard" 
                                 onClick={onClose}
-                                className="w-full flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-accent-gold/30 transition-all group"
+                                className="w-full flex items-center justify-between p-4 bg-text-primary/5 rounded-2xl border border-border hover:border-accent-gold/30 transition-all group"
                             >
                                 <div className="flex items-center gap-4">
                                     <div className="w-10 h-10 rounded-xl bg-accent-gold/10 flex items-center justify-center text-accent-gold">
                                         <History size={20} />
                                     </div>
                                     <div className="text-left">
-                                        <p className="text-white font-bold text-sm">{lang === "EN" ? "My History" : "Mon Historique"}</p>
+                                        <p className="text-text-primary font-bold text-sm">{lang === "EN" ? "My History" : "Mon Historique"}</p>
                                         <p className="text-[10px] text-text-secondary uppercase tracking-widest">{lang === "EN" ? "Saved selections" : "Sélections sauvegardées"}</p>
                                     </div>
                                 </div>
-                                <ChevronRight size={18} className="text-white/20 group-hover:text-accent-gold transition-colors" />
+                                <ChevronRight size={18} className="text-text-primary/20 group-hover:text-accent-gold transition-colors" />
                             </Link>
 
                             <button 
@@ -110,7 +110,7 @@ export default function AccountMenu({ isOpen, onClose, lang, onLangChange }: Acc
                         <div className="p-6 pt-0">
                             <button
                                 onClick={onClose}
-                                className="w-full h-14 bg-white/5 text-white/50 font-bold rounded-2xl border border-white/5 uppercase text-xs tracking-[0.2em]"
+                                className="w-full h-14 bg-text-primary/5 text-text-primary/50 font-bold rounded-2xl border border-border uppercase text-xs tracking-[0.2em]"
                             >
                                 {lang === "EN" ? "Close" : "Fermer"}
                             </button>
