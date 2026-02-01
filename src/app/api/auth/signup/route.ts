@@ -27,6 +27,15 @@ export async function POST(req: Request) {
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = crypto.randomBytes(32).toString("hex");
 
+    // VERIFICATION CRITIQUE DES CLÉS
+    const sbUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!sbUrl || sbUrl.includes("placeholder")) {
+        return NextResponse.json({ 
+            error: "CONFIGURATION MANQUANTE", 
+            message: "Votre URL Supabase n'est pas configurée dans Vercel ou .env.local" 
+        }, { status: 500 });
+    }
+
     const { data: insertData, error: insertError } = await supabase.from("users").insert({
       name,
       email,
