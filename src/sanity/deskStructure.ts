@@ -1,5 +1,5 @@
 import { StructureBuilder } from 'sanity/desk'
-import { UtensilsCrossed, Tag, Settings, Wine, ChefHat, LayoutGrid, BellRing } from 'lucide-react'
+import { UtensilsCrossed, Tag, Settings, ChefHat, LayoutGrid } from 'lucide-react'
 import { Iframe } from 'sanity-plugin-iframe-pane'
 import type { DefaultDocumentNodeResolver } from 'sanity/desk'
 
@@ -31,19 +31,7 @@ export const myStructure = (S: StructureBuilder) =>
   S.list()
     .title('E-MENU Admin')
     .items([
-      // 1. Section SERVICE (Pour les serveurs)
-      S.listItem()
-        .title('Service en Salle')
-        .icon(BellRing)
-        .child(
-          S.documentList()
-            .title('Appels Serveur')
-            .filter('_type == "notification" && status != "done"')
-        ),
-
-      S.divider(),
-
-      // 2. Section CARTE DU RESTAURANT (Dynamique)
+      // 1. Section CARTE DU RESTAURANT (Dynamique)
       S.listItem()
         .title('La Carte')
         .icon(UtensilsCrossed)
@@ -86,7 +74,7 @@ export const myStructure = (S: StructureBuilder) =>
       
       S.divider(),
 
-      // 3. Section BADGES & INDICATEURS
+      // 2. Section BADGES & INDICATEURS
       S.listItem()
         .title('Indicateurs (Badges)')
         .icon(Tag)
@@ -124,6 +112,6 @@ export const myStructure = (S: StructureBuilder) =>
 
       S.divider(),
 
-      // 4. MAINTENANCE
+      // 3. MAINTENANCE
       // L'outil Vision est déjà accessible via les onglets du haut par défaut
     ])

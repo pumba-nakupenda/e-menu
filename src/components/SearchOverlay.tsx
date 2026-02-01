@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Search, X, ChevronRight, Check } from "lucide-react";
+import { Search, X, Plus, Minus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { Dish } from "./MenuItem";
@@ -11,12 +11,12 @@ import { BadgeObject } from "./MenuItem";
 
 interface SearchOverlayProps {
     isOpen: boolean;
-    selectedIds: Set<string>;
+    cart: Record<string, number>;
     dishes: Dish[];
     categories: string[];
     onClose: () => void;
     onSelectDish: (dish: Dish) => void;
-    onToggleDish: (dish: Dish) => void;
+    onUpdateQuantity: (dishId: string, delta: number) => void;
     lang?: "FR" | "EN";
     categoryTranslations?: Record<string, string>;
     badgeIcons?: Record<string, BadgeObject>;
@@ -25,12 +25,12 @@ interface SearchOverlayProps {
 
 export default function SearchOverlay({
     isOpen,
-    selectedIds,
+    cart,
     dishes,
     categories,
     onClose,
     onSelectDish,
-    onToggleDish,
+    onUpdateQuantity,
     lang = "FR",
     categoryTranslations,
     badgeIcons,
@@ -40,7 +40,6 @@ export default function SearchOverlay({
     const [activeCategory, setActiveCategory] = useState("Tous");
     const [activeBadge, setActiveBadge] = useState<string | null>(null);
 
-    // Filter badges based on the active category
     const dynamicBadgeFilters = useMemo(() => {
         const badges = new Set<string>();
         const relevantDishes = activeCategory === "Tous" 
@@ -53,7 +52,6 @@ export default function SearchOverlay({
         return Array.from(badges);
     }, [activeCategory, dishes]);
 
-    // Reset active badge if it's no longer available in the new category context
     useEffect(() => {
         if (activeBadge && !dynamicBadgeFilters.includes(activeBadge)) {
             setActiveBadge(null);
@@ -68,12 +66,10 @@ export default function SearchOverlay({
     const results = useMemo(() => {
         let base = dishes;
         
-        // 1. Filter by Category
         if (activeCategory !== "Tous") {
             base = base.filter(d => d.category === activeCategory);
         }
 
-        // 2. Filter by Badge
         if (activeBadge) {
             base = base.filter(d => {
                 if (d.badgeObjects) {
@@ -83,7 +79,7 @@ export default function SearchOverlay({
             });
         }
 
-        if (!query.trim()) return base.slice(0, 8); // Show more suggestions when no query
+        if (!query.trim()) return base.slice(0, 8);
 
         return base.filter((dish) =>
             dish.title.toLowerCase().includes(query.toLowerCase()) ||
@@ -96,7 +92,6 @@ export default function SearchOverlay({
         if (badgeIcons && badgeIcons[filter]) {
             const b = badgeIcons[filter];
             if (b.iconType === 'emoji') return <span className="mr-1">{b.emoji}</span>;
-            // For Lucide or Image, we could render a small version, but emoji is best for filter pills
         }
         return null;
     };
@@ -108,6 +103,24 @@ export default function SearchOverlay({
         return price.toLocaleString("fr-FR").replace(/\s/g, "\u00A0") + "\u00A0F";
     };
 
+    const QuantitySelector = ({ dishId, isSmall = false }: { dishId: string, isSmall?: boolean }) => {
+        const qty = cart[dishId] || 0;
+        return (
+            <div className={cn(
+                "flex items-center bg-white/5 border border-white/10 rounded-full p-1",
+                isSmall ? "gap-2" : "gap-4"
+            )}>
+                {qty > 0 && (
+                    <>
+                        <button onClick={() => onUpdateQuantity(dishId, -1)} className="p-1 text-white/40"><Minus size={isSmall ? 14 : 18} /></button>
+                        <span className="text-white font-bold min-w-[12px] text-center">{qty}</span>
+                    </>
+                )}
+                <button onClick={() => onUpdateQuantity(dishId, 1)} className="p-1 text-accent-gold"><Plus size={isSmall ? 14 : 18} strokeWidth={3} /></button>
+            </div>
+        );
+    };
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -117,7 +130,6 @@ export default function SearchOverlay({
                     exit={{ opacity: 0 }}
                     className="fixed inset-0 z-[110] bg-background px-4 pt-6 overflow-y-auto"
                 >
-                    {/* Search Header */}
                     <div className="flex items-center gap-4 mb-6">
                         <div className="relative flex-1">
                             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-accent-gold">
@@ -148,7 +160,6 @@ export default function SearchOverlay({
                         </button>
                     </div>
 
-                    {/* Search Filters: Categories */}
                     <div className="space-y-3 mb-6">
                         <h3 className="text-[10px] font-bold text-accent-gold/50 uppercase tracking-[0.2em] ml-1">
                             {lang === "EN" ? "Categories" : "Catégories"}
@@ -159,7 +170,7 @@ export default function SearchOverlay({
                                     key={cat}
                                     onClick={() => {
                                         setActiveCategory(cat);
-                                        setActiveBadge(null); // Reset badge when switching category
+                                        setActiveBadge(null);
                                     }}
                                     className={cn(
                                         "px-5 py-2 rounded-full text-[13px] font-bold border transition-all whitespace-nowrap flex items-center",
@@ -174,7 +185,6 @@ export default function SearchOverlay({
                         </div>
                     </div>
 
-                    {/* Search Filters: Dynamic Badges */}
                     {dynamicBadgeFilters.length > 0 && (
                         <div className="space-y-3 mb-10">
                             <h3 className="text-[10px] font-bold text-accent-gold/50 uppercase tracking-[0.2em] ml-1">
@@ -202,7 +212,6 @@ export default function SearchOverlay({
 
                     {results.length > 0 ? (
                         <div className="space-y-12 pb-24">
-                            {/* Top Match */}
                             {topMatch && (
                                 <section>
                                     <h2 className="text-[11px] font-bold text-text-secondary uppercase tracking-[0.2em] mb-4">
@@ -219,16 +228,7 @@ export default function SearchOverlay({
                                                 </h3>
                                                 <span className="font-bold text-accent-gold">{formatPrice(topMatch.price)}</span>
                                             </div>
-                                            {/* Quick toggle check */}
-                                            <button
-                                                onClick={() => onToggleDish(topMatch)}
-                                                className={cn(
-                                                    "w-10 h-10 rounded-full flex items-center justify-center transition-all",
-                                                    selectedIds.has(topMatch.id) ? "bg-accent-gold text-background" : "bg-white/5 border border-white/10 text-white/20"
-                                                )}
-                                            >
-                                                <Check size={20} strokeWidth={3} />
-                                            </button>
+                                            <QuantitySelector dishId={topMatch.id} />
                                         </div>
                                         <button
                                             onClick={() => onSelectDish(topMatch)}
@@ -240,7 +240,6 @@ export default function SearchOverlay({
                                 </section>
                             )}
 
-                            {/* List Results */}
                             {moreResults.length > 0 && (
                                 <section>
                                     <h2 className="text-[11px] font-bold text-text-secondary uppercase tracking-[0.2em] mb-4">
@@ -252,7 +251,6 @@ export default function SearchOverlay({
                                                 key={dish.id}
                                                 className="flex items-center gap-4 group"
                                             >
-                                                {/* Clickable Image & Text area opens details */}
                                                 <div 
                                                     className="flex items-center gap-4 flex-1 cursor-pointer"
                                                     onClick={() => onSelectDish(dish)}
@@ -273,21 +271,7 @@ export default function SearchOverlay({
                                                     </div>
                                                 </div>
 
-                                                {/* Selection Toggle Button */}
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        onToggleDish(dish);
-                                                    }}
-                                                    className={cn(
-                                                        "w-8 h-8 rounded-full flex items-center justify-center transition-all shrink-0 mb-4",
-                                                        selectedIds.has(dish.id) 
-                                                            ? "bg-accent-gold text-background shadow-gold" 
-                                                            : "bg-white/5 border border-white/10 text-white/20 hover:text-white"
-                                                    )}
-                                                >
-                                                    <Check size={16} strokeWidth={selectedIds.has(dish.id) ? 3 : 2} />
-                                                </button>
+                                                <QuantitySelector dishId={dish.id} isSmall />
                                             </div>
                                         ))}
                                     </div>

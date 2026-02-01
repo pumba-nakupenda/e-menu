@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, use, Suspense } from "react";
+import { useState, useMemo, useEffect, use } from "react";
 import Navbar from "@/components/Navbar";
 import CategoryNav from "@/components/CategoryNav";
 import FilterBar from "@/components/FilterBar";
@@ -8,27 +8,25 @@ import MenuItem, { Dish } from "@/components/MenuItem";
 import DishBottomSheet from "@/components/DishBottomSheet";
 import SelectionBar from "@/components/SelectionBar";
 import SelectionSummary from "@/components/SelectionSummary";
-import WaiterCallModal from "@/components/WaiterCallModal";
 import SearchOverlay from "@/components/SearchOverlay";
 import DishSkeleton, { FeaturedDishSkeleton } from "@/components/DishSkeleton";
-import { mockDishes as localMockDishes } from "@/data/menu";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
 import FeaturedCarousel from "@/components/FeaturedCarousel";
-import { cn } from "@/lib/utils";
-import Pusher from 'pusher-js';
+import { useSession } from "next-auth/react";
 
 export default function TablePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
-  const tableNumber = resolvedParams.id;
+  const { data: session, status } = useSession();
 
   const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
-  const [selectedDishIds, setSelectedDishIds] = useState<Set<string>>(new Set());
+  
+  // Record<dishId, quantity>
+  const [cart, setCart] = useState<Record<string, number>>({});
+  
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isWaiterModalOpen, setIsWaiterModalOpen] = useState(false);
   const [isSelectionSummaryOpen, setIsSelectionSummaryOpen] = useState(false);
   const [lang, setLang] = useState<"FR" | "EN">("FR");
 
@@ -38,52 +36,21 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
   const [activeCategory, setActiveCategory] = useState("Entrées");
   const [sectionFilters, setSectionFilters] = useState<Record<string, string>>({});
   const [categoryTranslations, setCategoryTranslations] = useState<Record<string, string>>({});
-  const [isCallingWaiter, setIsCallingWaiter] = useState(false);
-  const [activeCallStatus, setActiveCallStatus] = useState<'pending' | 'processing' | null>(null);
 
+  // Charger le panier sauvegardé (NextAuth)
   useEffect(() => {
-    // 1. CHARGEMENT INITIAL (SANITY)
-    const fetchActiveCall = async () => {
-        const data = await client.fetch(`*[_type == "notification" && tableNumber == $table && status != "done"][0]`, { table: tableNumber });
-        setActiveCallStatus(data?.status || null);
-    };
-    fetchActiveCall();
-
-    // 2. TEMPS RÉEL (PUSHER - ULTRA RAPIDE)
-    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
-    });
-
-    const channel = pusher.subscribe('staff-notifications');
-    
-    // Si MA table appelle
-    channel.bind('new-call', (data: any) => {
-      console.log("Pusher new-call reçu:", data);
-      if (data.tableNumber === tableNumber) {
-          setActiveCallStatus('pending');
-      }
-    });
-
-    // Si un serveur met à jour ou valide l'appel
-    channel.bind('resolved-call', (data: any) => {
-      console.log("Pusher resolved-call reçu:", data);
-      fetchActiveCall();
-    });
-
-    // 3. FALLBACK (SANITY LISTENER) - Updated with activeCallStatus
-    const subscription = client.listen(`*[_type == "notification" && tableNumber == $table]`, { table: tableNumber }, { includeResult: true })
-        .subscribe((update: any) => {
-            const { transition, result } = update;
-            if (transition === 'appear') setActiveCallStatus('pending');
-            if (transition === 'update') setActiveCallStatus(result.status !== 'done' ? result.status : null);
-            if (transition === 'disappear') setActiveCallStatus(null);
-        });
-
-    return () => {
-      pusher.unsubscribe('staff-notifications');
-      subscription.unsubscribe();
-    };
-  }, [tableNumber]);
+    if (status === "authenticated" && session?.user?.email) {
+        const saved = localStorage.getItem(`emenu_cart_${session.user.email}`);
+        if (saved) {
+            try {
+                const { cart: savedCart } = JSON.parse(saved);
+                setCart(savedCart);
+            } catch (e) {
+                console.error("Failed to load saved cart", e);
+            }
+        }
+    }
+  }, [status, session]);
 
   useEffect(() => {
     async function fetchData() {
@@ -175,52 +142,29 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
       return Array.from(badges);
   }, [dishes]);
 
-  const handleToggleSelection = (dish: Dish) => {
-    setSelectedDishIds(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(dish.id)) newSet.delete(dish.id);
-      else newSet.add(dish.id);
-      return newSet;
+  // QUANTITY HANDLERS
+  const updateQuantity = (dishId: string, delta: number) => {
+    setCart(prev => {
+      const currentQty = prev[dishId] || 0;
+      const newQty = Math.max(0, currentQty + delta);
+      
+      const newCart = { ...prev };
+      if (newQty === 0) {
+        delete newCart[dishId];
+      } else {
+        newCart[dishId] = newQty;
+      }
+      return newCart;
     });
   };
 
-  const handleCallWaiter = async (type: 'waiter' | 'bill' = 'waiter') => {
-    if (isCallingWaiter) return;
-    
-    // --- GESTION DU DOUBLON (ZEN MODE) ---
-    if (activeCallStatus) {
-        setIsWaiterModalOpen(true);
-        return;
-    }
-
-    // --- OPTIMISTIC UI ---
-    setActiveCallStatus('pending'); // Allume la cloche immédiatement
-    setIsWaiterModalOpen(true);
-    setIsSelectionSummaryOpen(false);
-
-    try {
-      setIsCallingWaiter(true);
-      const res = await fetch('/api/call-waiter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tableNumber, type }),
-      });
-      
-      if (!res.ok) throw new Error("Erreur réseau");
-      console.log("Appel envoyé");
-    } catch (err: any) {
-      console.error("Échec de l'appel:", err);
-      // En cas d'échec critique seulement, on éteint la cloche
-      // setActiveCallStatus(null); 
-    } finally {
-      // On libère le clic quoi qu'il arrive après 2 secondes pour éviter le blocage
-      setTimeout(() => setIsCallingWaiter(false), 2000);
-    }
-  };
+  const totalItemsCount = useMemo(() => {
+    return Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+  }, [cart]);
 
   return (
     <main className="min-h-screen bg-background pb-32">
-      <Navbar onSearchClick={() => setIsSearchOpen(true)} lang={lang} onLangChange={setLang} tableNumber={tableNumber} hasActiveCall={!!activeCallStatus} />
+      <Navbar onSearchClick={() => setIsSearchOpen(true)} lang={lang} onLangChange={setLang} />
 
       <div className="mt-24">
         <FeaturedCarousel 
@@ -267,7 +211,13 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
                 <FilterBar filters={lang === "EN" ? (domainFilters[catName] || ["Tout"]).map(f => filterTranslations[f] || f) : (domainFilters[catName] || ["Tout"])} activeFilter={lang === "EN" ? filterTranslations[currentFilter] : currentFilter} icons={allFilterIcons} onFilterChange={(f) => setSectionFilters(prev => ({ ...prev, [catName]: lang === "EN" ? Object.keys(filterTranslations).find(k => filterTranslations[k] === f) || f : f }))} />
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-4">
                   {categoryDishes.map((dish) => (
-                    <MenuItem key={dish.id} dish={{...dish, title: lang === "EN" && dish.translations?.en ? dish.translations.en.title : dish.title, description: lang === "EN" && dish.translations?.en ? dish.translations.en.description : dish.description}} isSelected={selectedDishIds.has(dish.id)} onToggle={handleToggleSelection} onShowDetails={(d) => { setSelectedDish(d); setIsBottomSheetOpen(true); }} />
+                    <MenuItem 
+                        key={dish.id} 
+                        dish={{...dish, title: lang === "EN" && dish.translations?.en ? dish.translations.en.title : dish.title, description: lang === "EN" && dish.translations?.en ? dish.translations.en.description : dish.description}} 
+                        quantity={cart[dish.id] || 0}
+                        onUpdateQuantity={(delta) => updateQuantity(dish.id, delta)} 
+                        onShowDetails={(d) => { setSelectedDish(d); setIsBottomSheetOpen(true); }} 
+                    />
                   ))}
                 </div>
               </motion.section>
@@ -277,11 +227,43 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
         )}
       </div>
 
-      <DishBottomSheet dish={selectedDish} isOpen={isBottomSheetOpen} isSelected={!!selectedDish && selectedDishIds.has(selectedDish.id)} onClose={() => setIsBottomSheetOpen(false)} onToggleSelection={handleToggleSelection} lang={lang} />
-      <SearchOverlay isOpen={isSearchOpen} selectedIds={selectedDishIds} dishes={dishes} categories={categories} onClose={() => setIsSearchOpen(false)} onSelectDish={(d) => { setIsSearchOpen(false); setSelectedDish(d); setIsBottomSheetOpen(true); }} onToggleDish={handleToggleSelection} lang={lang} categoryTranslations={categoryTranslations} allBadgeFilters={allBadgeFilters} badgeIcons={allFilterIcons} />
-      <WaiterCallModal isOpen={isWaiterModalOpen} onClose={() => setIsWaiterModalOpen(false)} lang={lang} tableNumber={tableNumber} status={activeCallStatus || 'pending'} />
-      <SelectionSummary isOpen={isSelectionSummaryOpen} selectedIds={selectedDishIds} dishes={dishes} onClose={() => setIsSelectionSummaryOpen(false)} onRemove={(id) => setSelectedDishIds(prev => { const n = new Set(prev); n.delete(id); return n; })} onCallWaiter={() => { handleCallWaiter('waiter'); setIsSelectionSummaryOpen(false); setIsWaiterModalOpen(true); }} lang={lang} />
-      <SelectionBar itemCount={selectedDishIds.size} onCallWaiter={() => { handleCallWaiter('waiter'); setIsWaiterModalOpen(true); }} onViewSelection={() => setIsSelectionSummaryOpen(true)} lang={lang} />
+      <DishBottomSheet 
+        dish={selectedDish} 
+        isOpen={isBottomSheetOpen} 
+        quantity={selectedDish ? (cart[selectedDish.id] || 0) : 0}
+        onClose={() => setIsBottomSheetOpen(false)} 
+        onUpdateQuantity={(delta) => selectedDish && updateQuantity(selectedDish.id, delta)} 
+        lang={lang} 
+      />
+      
+      <SearchOverlay 
+        isOpen={isSearchOpen} 
+        cart={cart} 
+        dishes={dishes} 
+        categories={categories} 
+        onClose={() => setIsSearchOpen(false)} 
+        onSelectDish={(d) => { setIsSearchOpen(false); setSelectedDish(d); setIsBottomSheetOpen(true); }} 
+        onUpdateQuantity={updateQuantity} 
+        lang={lang} 
+        categoryTranslations={categoryTranslations} 
+        allBadgeFilters={allBadgeFilters} 
+        badgeIcons={allFilterIcons} 
+      />
+      
+      <SelectionSummary 
+        isOpen={isSelectionSummaryOpen} 
+        cart={cart} 
+        dishes={dishes} 
+        onClose={() => setIsSelectionSummaryOpen(false)} 
+        onUpdateQuantity={updateQuantity} 
+        lang={lang} 
+      />
+      
+      <SelectionBar 
+        itemCount={totalItemsCount} 
+        onViewSelection={() => setIsSelectionSummaryOpen(true)} 
+        lang={lang} 
+      />
 
       <footer className="container mx-auto px-6 py-20 border-t border-white/5 mt-20 text-center text-white/40">
         <div className="font-display italic text-2xl mb-6 text-accent-gold">E-MENU</div>

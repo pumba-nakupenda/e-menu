@@ -2,11 +2,10 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { X, Star, Heart, Leaf, Flame, Wheat, Check, CircleHelp, LucideIcon, HelpCircle } from "lucide-react";
+import { X, Star, Heart, Leaf, Flame, Wheat, Check, CircleHelp, Plus, Minus, HelpCircle } from "lucide-react";
 import { Dish, BadgeObject } from "./MenuItem";
 import { cn } from "@/lib/utils";
 
-// Map for Lucide icons consistent with MenuItem
 import { 
     Beef, Fish, Candy, Cherry, Wine, GlassWater, Sparkles, Martini, CakeSlice, IceCreamCone, Nut, Coffee, Beer,
     Utensils, Pizza, Apple, Carrot, Egg, Milk, Croissant, Drumstick, Soup, Sandwich, Citrus, Grape, Vegan,
@@ -22,13 +21,13 @@ const LucideIconMap: Record<string, any> = {
 interface DishBottomSheetProps {
     dish: Dish | null;
     isOpen: boolean;
-    isSelected: boolean;
+    quantity: number;
     onClose: () => void;
-    onToggleSelection: (dish: Dish) => void;
+    onUpdateQuantity: (delta: number) => void;
     lang?: "FR" | "EN";
 }
 
-export default function DishBottomSheet({ dish, isOpen, isSelected, onClose, onToggleSelection, lang = "FR" }: DishBottomSheetProps) {
+export default function DishBottomSheet({ dish, isOpen, quantity, onClose, onUpdateQuantity, lang = "FR" }: DishBottomSheetProps) {
     if (!dish) return null;
 
     const formatPrice = (price: number) => {
@@ -72,7 +71,6 @@ export default function DishBottomSheet({ dish, isOpen, isSelected, onClose, onT
         <AnimatePresence>
             {isOpen && (
                 <div className="fixed inset-0 z-[100] flex items-end justify-center">
-                    {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -81,7 +79,6 @@ export default function DishBottomSheet({ dish, isOpen, isSelected, onClose, onT
                         className="absolute inset-0 bg-background/80 backdrop-blur-md"
                     />
 
-                    {/* Bottom Sheet */}
                     <motion.div
                         initial={{ y: "100%" }}
                         animate={{ y: 0 }}
@@ -89,31 +86,26 @@ export default function DishBottomSheet({ dish, isOpen, isSelected, onClose, onT
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
                         className="relative w-full max-w-md bg-[#1C1C1E] rounded-t-[40px] shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
                     >
-                        {/* Handle Bar */}
                         <div className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-white/20 rounded-full z-30" />
 
-                        {/* Close & Like Buttons - Fixed at top */}
                         <div className="absolute top-6 left-0 right-0 z-30 px-6 flex justify-between items-center pointer-events-none">
                             <button onClick={onClose} className="w-10 h-10 bg-black/40 backdrop-blur-xl rounded-full flex items-center justify-center text-white pointer-events-auto border border-white/10">
                                 <X size={20} strokeWidth={2.5} />
                             </button>
                             <button 
-                                onClick={() => onToggleSelection(dish)}
+                                onClick={() => onUpdateQuantity(quantity > 0 ? -quantity : 1)}
                                 className="w-10 h-10 bg-black/40 backdrop-blur-xl rounded-full flex items-center justify-center text-accent-gold pointer-events-auto border border-white/10"
                             >
-                                <Heart size={20} fill={isSelected ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2} />
+                                <Heart size={20} fill={quantity > 0 ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2} />
                             </button>
                         </div>
 
-                        {/* Scrollable Content Area */}
                         <div className="overflow-y-auto no-scrollbar pb-32">
-                            {/* Hero Image */}
                             <div className="relative aspect-video w-full bg-gradient-to-b from-gray-800 to-transparent">
                                 <Image src={dish.image} alt={dish.title} fill className="object-cover" />
                                 <div className="absolute inset-0 bg-gradient-to-t from-[#1C1C1E] via-transparent to-transparent" />
                             </div>
 
-                            {/* Info Content */}
                             <div className="px-8 -mt-6 relative z-10">
                                 <h1 className="font-display font-bold text-[28px] md:text-[32px] text-white leading-[1.1] mb-2">
                                     {lang === "EN" && dish.translations?.en ? dish.translations.en.title : dish.title}
@@ -128,7 +120,6 @@ export default function DishBottomSheet({ dish, isOpen, isSelected, onClose, onT
                                     </div>
                                 </div>
 
-                                {/* Badges */}
                                 <div className="flex flex-wrap gap-2 mb-8">
                                     {dish.badgeObjects && dish.badgeObjects.length > 0 
                                         ? dish.badgeObjects.map(renderBadgeItem)
@@ -136,7 +127,6 @@ export default function DishBottomSheet({ dish, isOpen, isSelected, onClose, onT
                                     }
                                 </div>
 
-                                {/* Story */}
                                 <div className="mb-6">
                                     <h3 className="text-white font-bold text-[18px] mb-3 italic font-display">
                                         {lang === "EN" ? "The Story" : "L'Histoire"}
@@ -152,26 +142,42 @@ export default function DishBottomSheet({ dish, isOpen, isSelected, onClose, onT
                             </div>
                         </div>
 
-                        {/* Action Button - Sticky at bottom */}
                         <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#1C1C1E] via-[#1C1C1E] to-transparent pt-10">
-                            <button
-                                onClick={() => onToggleSelection(dish)}
-                                className={cn(
-                                    "w-full h-[56px] rounded-[22px] flex items-center justify-center gap-3 transition-all active:scale-95 font-bold text-[16px] shadow-2xl",
-                                    isSelected
-                                        ? "bg-white/10 border border-accent-gold/40 text-accent-gold"
-                                        : "bg-accent-gold text-background shadow-gold"
-                                )}
-                            >
-                                {isSelected ? (
-                                    <>
-                                        <Check size={20} strokeWidth={3} />
-                                        <span>{lang === "EN" ? "Selected" : "Sélectionné"}</span>
-                                    </>
-                                ) : (
+                            {quantity > 0 ? (
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center bg-white/5 border border-white/10 rounded-[22px] p-1 h-[56px] flex-1">
+                                        <button 
+                                            onClick={() => onUpdateQuantity(-1)}
+                                            className="w-12 h-full flex items-center justify-center text-white/50 hover:text-white transition-colors"
+                                        >
+                                            <Minus size={20} strokeWidth={2.5} />
+                                        </button>
+                                        <div className="flex-1 text-center">
+                                            <span className="text-xl font-bold text-white">{quantity}</span>
+                                        </div>
+                                        <button 
+                                            onClick={() => onUpdateQuantity(1)}
+                                            className="w-12 h-full flex items-center justify-center text-accent-gold"
+                                        >
+                                            <Plus size={20} strokeWidth={3} />
+                                        </button>
+                                    </div>
+                                    <button
+                                        onClick={onClose}
+                                        className="bg-accent-gold text-background font-bold h-[56px] px-8 rounded-[22px] flex items-center justify-center shadow-gold"
+                                    >
+                                        OK
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => onUpdateQuantity(1)}
+                                    className="w-full h-[56px] bg-accent-gold text-background font-bold rounded-[22px] flex items-center justify-center gap-3 active:scale-95 text-[16px] shadow-gold"
+                                >
+                                    <Plus size={20} strokeWidth={3} />
                                     <span>{lang === "EN" ? "Add to my selection" : "Ajouter à ma sélection"}</span>
-                                )}
-                            </button>
+                                </button>
+                            )}
                         </div>
                     </motion.div>
                 </div>
