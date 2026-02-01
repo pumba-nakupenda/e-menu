@@ -178,13 +178,13 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
         <CategoryNav categories={categories.length > 0 ? categories : ["Entrées", "Plats", "Desserts"]} activeCategory={activeCategory} onCategoryChange={setActiveCategory} lang={lang} categoryTranslations={categoryTranslations} />
       </div>
 
-      <div className="container mx-auto px-4 mt-2 min-h-[40vh]">
+      <div className="container mx-auto px-4 mt-2 min-h-[40vh] max-w-7xl">
         {isLoading ? (
           <div className="space-y-8 pt-4">
             <div className="flex justify-between items-baseline border-l-2 border-accent-gold/20 pl-4 opacity-50">
                 <div className="h-10 w-48 bg-white/5 rounded-md animate-pulse" />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                 <FeaturedDishSkeleton />
                 <DishSkeleton />
                 <DishSkeleton />
@@ -200,7 +200,7 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
             const categoryDishes = dishes.filter((d) => {
               if (d.category !== catName) return false;
               if (currentFilter === "Tout") return true;
-              return d.badgeObjects?.some(b => b.label === currentFilter) || false;
+              return d.badgeObjects?.some((b: any) => b.label === currentFilter) || false;
             });
 
             return (
@@ -209,7 +209,7 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
                   <h2 className="font-display font-bold text-[36px] text-white italic">{lang === "EN" ? (categoryTranslations[catName] || catName) : catName}</h2>
                 </div>
                 <FilterBar filters={lang === "EN" ? (domainFilters[catName] || ["Tout"]).map(f => filterTranslations[f] || f) : (domainFilters[catName] || ["Tout"])} activeFilter={lang === "EN" ? filterTranslations[currentFilter] : currentFilter} icons={allFilterIcons} onFilterChange={(f) => setSectionFilters(prev => ({ ...prev, [catName]: lang === "EN" ? Object.keys(filterTranslations).find(k => filterTranslations[k] === f) || f : f }))} />
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 mt-4">
                   {categoryDishes.map((dish) => (
                     <MenuItem 
                         key={dish.id} 
@@ -265,7 +265,7 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
         lang={lang} 
       />
 
-      <footer className="container mx-auto px-6 py-20 border-t border-white/5 mt-20 text-center text-white/40">
+      <footer className="max-w-7xl mx-auto px-6 py-20 border-t border-white/5 mt-20 text-center text-white/40">
         <div className="font-display italic text-2xl mb-6 text-accent-gold">E-MENU</div>
         <div className="flex justify-center gap-6 mb-10">
           <a href="#" className="hover:text-accent-gold transition-colors">Instagram</a>

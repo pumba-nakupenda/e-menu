@@ -79,7 +79,7 @@ export default function FeaturedCarousel({ dishes, onSelect, lang }: FeaturedCar
     };
 
     return (
-        <div className="mb-0">
+        <div className="mb-0 max-w-7xl mx-auto">
             <div className="px-4 mb-3 flex items-center gap-2">
                 <Star size={16} className="text-accent-gold fill-accent-gold" />
                 <h2 className="font-display font-bold text-xl text-white italic">

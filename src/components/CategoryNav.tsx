@@ -44,7 +44,7 @@ export default function CategoryNav({
 
     return (
         <div className="sticky top-16 z-40 bg-background">
-            <div className="flex px-4 items-center gap-8 border-b border-border overflow-x-auto no-scrollbar">
+            <div className="max-w-7xl mx-auto flex px-4 items-center gap-8 border-b border-border overflow-x-auto no-scrollbar">
                 {categories.map((cat) => (
                     <button
                         key={cat}

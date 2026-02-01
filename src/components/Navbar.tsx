@@ -19,9 +19,10 @@ export default function Navbar({ onSearchClick, lang, onLangChange }: NavbarProp
 
     return (
         <>
-            <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md px-4 py-4 flex items-center justify-between border-b border-white/5">
-                {/* Logo */}
-                <Link href="/" className="flex items-center gap-2">
+            <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5">
+                <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+                    {/* Logo */}
+                    <Link href="/" className="flex items-center gap-2">
                     <div className="text-accent-gold">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M11 9H9V2H7V9H5V2H3V9C3 11.12 4.66 12.84 6.75 12.97V22H9.25V12.97C11.34 12.84 13 11.12 13 9V2H11V9ZM16 6V14h3v8h2V2c-2.76 0-5 2.24-5 4z" />
