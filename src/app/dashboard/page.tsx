@@ -12,7 +12,21 @@ import { client } from "@/sanity/lib/client";
 import Image from "next/image";
 import { urlFor } from "@/sanity/lib/image";
 import { cn } from "@/lib/utils";
-import { Settings } from "lucide-react";
+
+interface SavedItem {
+    id: string;
+    title: string;
+    qty: number;
+    price: number;
+}
+
+interface SavedSelection {
+    id: string;
+    date: string;
+    name: string;
+    total_price: number;
+    items: SavedItem[];
+}
 
 export default function DashboardPage() {
     const { data: session, status } = useSession();
