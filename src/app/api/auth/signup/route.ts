@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = crypto.randomBytes(32).toString("hex");
 
-    const { error } = await supabase.from("users").insert({
+    const { data: insertData, error: insertError } = await supabase.from("users").insert({
       name,
       email,
       password: hashedPassword,
@@ -35,7 +35,13 @@ export async function POST(req: Request) {
       is_verified: false,
     });
 
-    if (error) throw error;
+    if (insertError) {
+      return NextResponse.json({ 
+        error: `Erreur Supabase: ${insertError.message}`, 
+        code: insertError.code,
+        details: insertError.details 
+      }, { status: 400 });
+    }
 
     // Envoyer l'email de vérification
     const verifyUrl = `${process.env.NEXTAUTH_URL}/api/auth/verify?token=${verificationToken}`;
@@ -64,7 +70,14 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ message: "Utilisateur créé. Veuillez vérifier vos emails." }, { status: 201 });
   } catch (error: any) {
-    console.error("Signup error:", error);
-    return NextResponse.json({ error: "Une erreur est survenue lors de l'inscription" }, { status: 500 });
+    console.error("DEBUG SIGNUP ERROR:", error);
+    return NextResponse.json({ 
+      error: "Erreur technique lors de l'inscription",
+      message: error.message,
+      stack: error.stack,
+      raw: JSON.stringify(error)
+    }, { status: 500 });
   }
 }
+
+    
