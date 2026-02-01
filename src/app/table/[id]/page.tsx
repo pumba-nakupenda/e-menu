@@ -163,7 +163,7 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
   }, [cart]);
 
   return (
-    <main className="min-h-screen bg-background pb-32">
+    <main className="min-h-screen bg-background pb-32 transition-colors duration-300">
       <Navbar onSearchClick={() => setIsSearchOpen(true)} lang={lang} onLangChange={setLang} />
 
       <div className="mt-24">
@@ -174,7 +174,7 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
         />
       </div>
 
-      <div className="sticky top-16 z-40 bg-background/95 backdrop-blur-md border-b border-white/5">
+      <div className="sticky top-16 z-40 bg-background/95 backdrop-blur-md border-b border-border">
         <CategoryNav categories={categories.length > 0 ? categories : ["Entrées", "Plats", "Desserts"]} activeCategory={activeCategory} onCategoryChange={setActiveCategory} lang={lang} categoryTranslations={categoryTranslations} />
       </div>
 
@@ -182,7 +182,7 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
         {isLoading ? (
           <div className="space-y-8 pt-4">
             <div className="flex justify-between items-baseline border-l-2 border-accent-gold/20 pl-4 opacity-50">
-                <div className="h-10 w-48 bg-white/5 rounded-md animate-pulse" />
+                <div className="h-10 w-48 bg-text-primary/5 rounded-md animate-pulse" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                 <FeaturedDishSkeleton />
@@ -206,7 +206,7 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
             return (
               <motion.section key={catName} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
                 <div className="flex justify-between items-baseline border-l-2 border-accent-gold pl-4">
-                  <h2 className="font-display font-bold text-[36px] text-white italic">{lang === "EN" ? (categoryTranslations[catName] || catName) : catName}</h2>
+                  <h2 className="font-display font-bold text-[36px] text-text-primary italic">{lang === "EN" ? (categoryTranslations[catName] || catName) : catName}</h2>
                 </div>
                 <FilterBar filters={lang === "EN" ? (domainFilters[catName] || ["Tout"]).map(f => filterTranslations[f] || f) : (domainFilters[catName] || ["Tout"])} activeFilter={lang === "EN" ? filterTranslations[currentFilter] : currentFilter} icons={allFilterIcons} onFilterChange={(f) => setSectionFilters(prev => ({ ...prev, [catName]: lang === "EN" ? Object.keys(filterTranslations).find(k => filterTranslations[k] === f) || f : f }))} />
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 mt-4">
@@ -265,13 +265,13 @@ export default function TablePage({ params }: { params: Promise<{ id: string }> 
         lang={lang} 
       />
 
-      <footer className="max-w-7xl mx-auto px-6 py-20 border-t border-white/5 mt-20 text-center text-white/40">
+      <footer className="max-w-7xl mx-auto px-6 py-20 border-t border-border mt-20 text-center text-text-secondary">
         <div className="font-display italic text-2xl mb-6 text-accent-gold">E-MENU</div>
         <div className="flex justify-center gap-6 mb-10">
           <a href="#" className="hover:text-accent-gold transition-colors">Instagram</a>
           <a href="#" className="hover:text-accent-gold transition-colors">Facebook</a>
         </div>
-        <div className="space-y-2 opacity-40">
+        <div className="space-y-2 opacity-70">
           <p className="text-sm">123 Rue du Gourmet, 75001 Paris</p>
           <p className="text-[10px] tracking-[0.2em] uppercase font-bold text-accent-gold">
             Ouvert 7j/7 : 12h00 - 23h30

@@ -3,13 +3,13 @@
 @layer base {
   :root {
     /* Premium Light Mode (Champagne/Ivory Palette) */
-    --background: #f0f2f5; /* Fond gris très clair pour la page */
-    --surface: #ffffff;    /* Cartes en blanc pur pour le contraste */
-    --text-primary: #1C1C1C;
-    --text-secondary: #6B6B6B;
-    --accent-gold: #AF8F2C;
-    --accent-soft-gold: rgba(175, 143, 44, 0.08);
-    --border: rgba(0, 0, 0, 0.08);
+    --background: #EEF0F2; /* Fond un peu plus sombre pour faire ressortir le blanc */
+    --surface: #ffffff;
+    --text-primary: #111111; /* Noir quasi pur */
+    --text-secondary: #404040; /* Gris foncé lisible */
+    --accent-gold: #82620F; /* Bronze doré pour un fort contraste sur blanc */
+    --accent-soft-gold: rgba(130, 98, 15, 0.1);
+    --border: rgba(0, 0, 0, 0.15); /* Bordures plus visibles */
     
     --shadow-card-val: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
     --shadow-modal-val: 0 20px 40px -15px rgba(0, 0, 0, 0.1);

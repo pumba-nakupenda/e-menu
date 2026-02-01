@@ -66,7 +66,7 @@ export default function DashboardPage() {
                     image: f.image ? urlFor(f.image).width(200).height(200).url() : ""
                 })));
             }
-        } catch (error) { console.error(error); }
+        } catch (error) { console.error(error); } 
         finally { setIsLoading(false); }
     };
 
@@ -101,14 +101,14 @@ export default function DashboardPage() {
     if (status === "loading" || isLoading) return null;
 
     return (
-        <main className="min-h-screen bg-background pb-20">
+        <main className="min-h-screen bg-background pb-20 transition-colors duration-300">
             <Navbar onSearchClick={() => {}} lang={lang} onLangChange={setLang} />
             <div className="container mx-auto px-4 mt-28">
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-4">
-                        <Link href="/" className="p-2 bg-white/5 rounded-full text-white/50 hover:text-white"><ChevronLeft size={20} /></Link>
+                        <Link href="/" className="p-2 bg-text-primary/5 border border-border rounded-full text-text-secondary hover:text-text-primary transition-colors"><ChevronLeft size={20} /></Link>
                         <div>
-                            <h1 className="font-display font-bold text-3xl text-white italic">Mon E-Space</h1>
+                            <h1 className="font-display font-bold text-3xl text-text-primary italic">Mon E-Space</h1>
                             <p className="text-text-secondary text-sm">{session?.user?.name}</p>
                         </div>
                     </div>
@@ -121,7 +121,7 @@ export default function DashboardPage() {
                         animate={{ opacity: 1, scale: 1 }}
                         className="mb-10 bg-accent-gold p-6 rounded-[32px] flex items-center justify-between shadow-gold overflow-hidden relative group"
                     >
-                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform text-white">
                             <Settings size={120} />
                         </div>
                         <div className="relative z-10">
@@ -139,63 +139,63 @@ export default function DashboardPage() {
                 )}
 
                 {/* Tabs */}
-                <div className="flex gap-4 mb-8 bg-white/5 p-1 rounded-2xl">
-                    <button onClick={() => setActiveTab('history')} className={cn("flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all", activeTab === 'history' ? "bg-accent-gold text-background" : "text-white/40")}><History size={16} /> Historique</button>
-                    <button onClick={() => setActiveTab('favorites')} className={cn("flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all", activeTab === 'favorites' ? "bg-accent-gold text-background" : "text-white/40")}><Heart size={16} /> Favoris</button>
+                <div className="flex gap-4 mb-8 bg-surface border border-border p-1 rounded-2xl shadow-sm">
+                    <button onClick={() => setActiveTab('history')} className={cn("flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all", activeTab === 'history' ? "bg-accent-gold text-background shadow-md" : "text-text-secondary hover:bg-text-primary/5")}><History size={16} /> Historique</button>
+                    <button onClick={() => setActiveTab('favorites')} className={cn("flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all", activeTab === 'favorites' ? "bg-accent-gold text-background shadow-md" : "text-text-secondary hover:bg-text-primary/5")}><Heart size={16} /> Favoris</button>
                 </div>
 
                 <AnimatePresence mode="wait">
                     {activeTab === 'history' ? (
                         <motion.div key="history" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
                             {history.length > 0 ? history.map((entry) => (
-                                <div key={entry.id} className="bg-surface border border-white/5 rounded-[32px] p-6 space-y-4 shadow-xl">
+                                <div key={entry.id} className="bg-surface border border-border rounded-[32px] p-6 space-y-4 shadow-card">
                                     <div className="flex justify-between items-start">
                                         <div className="flex-1">
                                             {editingId === entry.id ? (
                                                 <div className="flex items-center gap-2 mb-1">
-                                                    <input autoFocus value={editName} onChange={(e) => setSaveName(e.target.value)} className="bg-white/10 border border-accent-gold/50 rounded-lg px-2 py-1 text-white text-lg font-bold outline-none" />
+                                                    <input autoFocus value={editName} onChange={(e) => setSaveName(e.target.value)} className="bg-text-primary/5 border border-accent-gold/50 rounded-lg px-2 py-1 text-text-primary text-lg font-bold outline-none" />
                                                     <button onClick={() => updateName(entry.id)} className="text-green-400 p-1"><Check size={20} /></button>
                                                     <button onClick={() => setEditingId(null)} className="text-red-400 p-1"><X size={20} /></button>
                                                 </div>
                                             ) : (
                                                 <div className="flex items-center gap-2 mb-1">
-                                                    <h3 className="text-xl font-bold text-white italic">{entry.name}</h3>
-                                                    <button onClick={() => { setEditingId(entry.id); setSaveName(entry.name); }} className="text-white/20 hover:text-accent-gold transition-colors p-1"><Edit2 size={14} /></button>
+                                                    <h3 className="text-xl font-bold text-text-primary italic">{entry.name}</h3>
+                                                    <button onClick={() => { setEditingId(entry.id); setSaveName(entry.name); }} className="text-text-secondary/50 hover:text-accent-gold transition-colors p-1"><Edit2 size={14} /></button>
                                                 </div>
                                             )}
-                                            <div className="flex items-center gap-2 text-white/40 text-[12px]"><Clock size={14} /> {new Date(entry.date).toLocaleString('fr-FR')}</div>
+                                            <div className="flex items-center gap-2 text-text-secondary text-[12px]"><Clock size={14} /> {new Date(entry.date).toLocaleString('fr-FR')}</div>
                                         </div>
-                                        <button onClick={() => deleteEntry(entry.id)} className="p-2 text-white/20 hover:text-red-400"><Trash2 size={18} /></button>
+                                        <button onClick={() => deleteEntry(entry.id)} className="p-2 text-text-secondary/30 hover:text-red-400"><Trash2 size={18} /></button>
                                     </div>
-                                    <div className="space-y-2 bg-black/20 rounded-2xl p-4">
+                                    <div className="space-y-2 bg-text-primary/5 rounded-2xl p-4 border border-border">
                                         {entry.items.map((item, idx) => (
                                             <div key={idx} className="flex justify-between text-sm">
-                                                <span className="text-white/80"><span className="text-accent-gold font-bold">{item.qty}x</span> {item.title}</span>
-                                                <span className="text-white/40">{item.price * item.qty} F</span>
+                                                <span className="text-text-secondary"><span className="text-accent-gold font-bold">{item.qty}x</span> {item.title}</span>
+                                                <span className="text-text-secondary/70">{item.price * item.qty} F</span>
                                             </div>
                                         ))}
                                     </div>
                                     <div className="pt-4 flex justify-between items-center">
-                                        <div><p className="text-[10px] text-white/30 uppercase font-bold tracking-tighter">Total</p><p className="text-xl font-bold text-accent-gold">{entry.total_price} F</p></div>
+                                        <div><p className="text-[10px] text-text-secondary/50 uppercase font-bold tracking-tighter">Total</p><p className="text-xl font-bold text-accent-gold">{entry.total_price} F</p></div>
                                         <button onClick={() => shareAgain(entry)} className="bg-[#25D366] text-white px-6 py-3 rounded-full text-xs font-bold flex items-center gap-2 shadow-lg"><MessageSquare size={14} fill="currentColor" /> Renvoyer</button>
                                     </div>
                                 </div>
-                            )) : <div className="text-center py-20 opacity-30 italic">Aucune sauvegarde Cloud.</div>}
+                            )) : <div className="text-center py-20 opacity-30 italic text-text-secondary">Aucune sauvegarde Cloud.</div>}
                         </motion.div>
                     ) : (
                         <motion.div key="favorites" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {favorites.length > 0 ? favorites.map((fav) => (
-                                <div key={fav.id} className="bg-surface border border-white/5 rounded-3xl p-4 flex gap-4 items-center">
-                                    <div className="relative w-16 h-16 rounded-2xl overflow-hidden shrink-0">
+                                <div key={fav.id} className="bg-surface border border-border rounded-3xl p-4 flex gap-4 items-center shadow-card">
+                                    <div className="relative w-16 h-16 rounded-2xl overflow-hidden shrink-0 border border-border">
                                         <Image src={fav.image} alt={fav.title} fill className="object-cover" />
                                     </div>
                                     <div className="flex-1">
-                                        <h4 className="font-display font-bold text-white">{fav.title}</h4>
+                                        <h4 className="font-display font-bold text-text-primary">{fav.title}</h4>
                                         <p className="text-accent-gold font-bold text-sm">{fav.price} F</p>
                                     </div>
                                     <button onClick={() => removeFavorite(fav.id)} className="p-2 text-red-400/40 hover:text-red-400"><Trash2 size={18} /></button>
                                 </div>
-                            )) : <div className="col-span-full text-center py-20 opacity-30 italic">Aucun plat favori.</div>}
+                            )) : <div className="col-span-full text-center py-20 opacity-30 italic text-text-secondary">Aucun plat favori.</div>}
                         </motion.div>
                     )}
                 </AnimatePresence>

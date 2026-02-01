@@ -96,7 +96,7 @@ export default function SelectionSummary({ isOpen, cart, dishes, onClose, onUpda
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="absolute inset-0 bg-background/80 backdrop-blur-md"
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                     />
 
                     <motion.div
@@ -248,7 +248,7 @@ export default function SelectionSummary({ isOpen, cart, dishes, onClose, onUpda
                             
                             <button
                                 onClick={onClose}
-                                className="w-full h-[40px] text-text-primary/30 text-[12px] uppercase tracking-widest font-bold"
+                                className="w-full h-[40px] text-text-secondary/70 text-[12px] uppercase tracking-widest font-bold"
                             >
                                 {lang === "EN" ? "Close" : "Fermer"}
                             </button>
