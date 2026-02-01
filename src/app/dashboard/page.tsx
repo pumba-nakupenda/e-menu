@@ -49,14 +49,14 @@ export default function DashboardPage() {
         try {
             // 1. Fetch History
             const { data: historyData } = await supabase.from('saved_selections').select('*').eq('user_email', session.user.email).order('created_at', { ascending: false });
-            setHistory(historyData?.map(d => ({ id: d.id, date: d.created_at, name: d.name, total_price: d.total_price, items: d.items })) || []);
+            setHistory(historyData?.map((d: any) => ({ id: d.id, date: d.created_at, name: d.name, total_price: d.total_price, items: d.items })) || []);
 
             // 2. Fetch Favorites IDs
             const { data: favsData } = await supabase.from('favorites').select('dish_id').eq('user_email', session.user.email);
             if (favsData && favsData.length > 0) {
-                const favIds = favsData.map(f => f.dish_id);
+                const favIds = favsData.map((f: any) => f.dish_id);
                 const sanityFavs = await client.fetch(`*[_type == "dish" && _id in $ids] { _id, title, price, image }`, { ids: favIds });
-                setFavorites(sanityFavs.map(f => ({
+                setFavorites(sanityFavs.map((f: any) => ({
                     id: f._id,
                     title: f.title,
                     price: f.price,

@@ -115,7 +115,7 @@ export default function MenuItem({ dish, quantity, onUpdateQuantity, onShowDetai
 
     const renderBadges = () => {
         if (dish.badgeObjects && dish.badgeObjects.length > 0) {
-            return dish.badgeObjects.map((b) => {
+            return dish.badgeObjects.map((b: any) => {
                 const iconColor = b.color || '#D4AF37';
                 if (b.iconType === 'image' && b.iconUrl) return <div key={b.key || b.label} className="w-[14px] h-[14px] relative opacity-80" title={b.label}><Image src={b.iconUrl} alt={b.label} fill className="object-contain" /></div>;
                 if (b.iconType === 'lucide' && b.lucideIcon) {

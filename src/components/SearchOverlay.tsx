@@ -44,10 +44,10 @@ export default function SearchOverlay({
         const badges = new Set<string>();
         const relevantDishes = activeCategory === "Tous" 
             ? dishes 
-            : dishes.filter(d => d.category === activeCategory);
+            : dishes.filter((d: Dish) => d.category === activeCategory);
             
-        relevantDishes.forEach(d => {
-            d.badgeObjects?.forEach(b => badges.add(b.label));
+        relevantDishes.forEach((d: Dish) => {
+            d.badgeObjects?.forEach((b: any) => badges.add(b.label));
         });
         return Array.from(badges);
     }, [activeCategory, dishes]);
@@ -71,9 +71,9 @@ export default function SearchOverlay({
         }
 
         if (activeBadge) {
-            base = base.filter(d => {
+            base = base.filter((d: Dish) => {
                 if (d.badgeObjects) {
-                    return d.badgeObjects.some(b => b.label === activeBadge);
+                    return d.badgeObjects.some((b: any) => b.label === activeBadge);
                 }
                 return d.badges?.includes(activeBadge);
             });
@@ -81,7 +81,7 @@ export default function SearchOverlay({
 
         if (!query.trim()) return base.slice(0, 8);
 
-        return base.filter((dish) =>
+        return base.filter((dish: Dish) =>
             dish.title.toLowerCase().includes(query.toLowerCase()) ||
             dish.description.toLowerCase().includes(query.toLowerCase())
         );

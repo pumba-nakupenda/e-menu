@@ -66,7 +66,7 @@ export default function SelectionSummary({ isOpen, cart, dishes, onClose, onUpda
                 user_email: session.user.email,
                 name: saveName || (lang === "EN" ? "My Selection" : "MaSélection"),
                 total_price: totalPrice,
-                items: selectedDishes.map(d => ({
+                items: selectedDishes.map((d: any) => ({
                     id: d.id,
                     title: d.title,
                     qty: cart[d.id],
