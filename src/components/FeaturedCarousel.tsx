@@ -82,7 +82,7 @@ export default function FeaturedCarousel({ dishes, onSelect, lang }: FeaturedCar
         <div className="mb-0 max-w-7xl mx-auto">
             <div className="px-4 mb-3 flex items-center gap-2">
                 <Star size={16} className="text-accent-gold fill-accent-gold" />
-                <h2 className="font-display font-bold text-xl text-white italic">
+                <h2 className="font-display font-bold text-xl text-text-primary italic">
                     {lang === "EN" ? "Chef's Suggestions" : "Les Suggestions du Chef"}
                 </h2>
             </div>
@@ -93,7 +93,7 @@ export default function FeaturedCarousel({ dishes, onSelect, lang }: FeaturedCar
                         key={dish.id}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => onSelect(dish)}
-                        className="flex-none w-[280px] snap-start bg-surface border border-white/5 rounded-[32px] overflow-hidden group"
+                        className="flex-none w-[280px] snap-start bg-surface border border-border rounded-[32px] overflow-hidden group shadow-card"
                     >
                         <div className="relative h-44 w-full">
                             <Image
@@ -113,7 +113,7 @@ export default function FeaturedCarousel({ dishes, onSelect, lang }: FeaturedCar
                                 <h3 className="text-white font-display font-bold text-lg leading-tight line-clamp-1 italic">
                                     {lang === "EN" && dish.translations?.en ? dish.translations.en.title : dish.title}
                                 </h3>
-                                <p className="text-accent-gold font-bold">{dish.price} F</p>
+                                <p className="text-[#d4af37] font-bold">{dish.price} F</p>
                             </div>
                         </div>
                     </motion.div>
